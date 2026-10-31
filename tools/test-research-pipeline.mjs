@@ -8,6 +8,7 @@ import { validateApprovalSet, hashPublicContent } from './approval-validation.mj
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const privateDir = path.join(root, 'private-review');
+await fs.mkdir(privateDir, { recursive:true });
 const fixtureDir = await fs.mkdtemp(path.join(privateDir, 'pipeline-fixture-'));
 const outputPath = path.join(fixtureDir, 'scan.json');
 const fingerprint = 'a'.repeat(64);
