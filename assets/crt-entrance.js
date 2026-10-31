@@ -204,5 +204,6 @@ export function mountCrtEntrance() {
   skip.addEventListener('click', onSkip);
   document.addEventListener('keydown', onKeydown);
   window.addEventListener('pagehide', dispose, { once: true });
+  document.documentElement.removeAttribute('data-crt-pending');
   return dispose;
 }
