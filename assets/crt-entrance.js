@@ -20,12 +20,10 @@ export function mountCrtEntrance() {
   const tagline1 = entrance.querySelector('#crt-tagline-1');
   const tagline2 = entrance.querySelector('#crt-tagline-2');
   const connectionStatus = entrance.querySelector('#crt-connection-status');
-  const prompt = entrance.querySelector('#crt-prompt');
   const liveStatus = entrance.querySelector('#crt-status');
   const physicalPower = entrance.querySelector('#crt-physical-power');
   const screenPower = entrance.querySelector('#crt-screen-power');
   const stickyPower = entrance.querySelector('#crt-sticky-target');
-  const enterPrompt = entrance.querySelector('#crt-enter-hotspot');
   const skip = entrance.querySelector('#crt-skip');
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const reducedTimings = reducedMotion
@@ -78,15 +76,6 @@ export function mountCrtEntrance() {
     }
   };
 
-  function setPrompt() {
-    // The ready state now transitions automatically; this legacy hotspot is
-    // kept disabled so it cannot intercept a click or keyboard activation.
-    enterPrompt.disabled = true;
-    enterPrompt.tabIndex = -1;
-    enterPrompt.setAttribute('aria-disabled', 'true');
-    prompt.setAttribute('aria-hidden', 'true');
-  }
-
   function typeField(element, text, speed, done) {
     if (reducedMotion || speed <= 0) { element.textContent = text; done(); return; }
     let position = 0;
@@ -127,7 +116,6 @@ export function mountCrtEntrance() {
     physicalPower.disabled = state !== CRT_STATES.OFF;
     screenPower.disabled = state !== CRT_STATES.OFF;
     stickyPower.disabled = state !== CRT_STATES.OFF;
-    setPrompt();
 
     const messages = {
       [CRT_STATES.OFF]: 'Display off. Press the Gateway power button to begin.',
@@ -138,7 +126,7 @@ export function mountCrtEntrance() {
       [CRT_STATES.MODEM_NEGOTIATING]: 'Negotiating connection.',
       [CRT_STATES.IDENTITY_REVEAL]: 'LARI identity loading.',
       [CRT_STATES.CONNECTION_ESTABLISHED]: 'Connection established.',
-      [CRT_STATES.READY]: 'System ready. Returning to the homepage.',
+      [CRT_STATES.READY]: 'Startup complete. Opening the homepage.',
       [CRT_STATES.ENTERING]: 'Returning to the homepage.',
       [CRT_STATES.SKIPPED]: 'Intro skipped.',
       [CRT_STATES.DONE]: 'Intro complete.'
@@ -161,7 +149,6 @@ export function mountCrtEntrance() {
       playAudio(modemAudio);
       typeIdentity();
     }
-    if (state === CRT_STATES.READY) machine.enter();
   }
 
   function finish(reason) {

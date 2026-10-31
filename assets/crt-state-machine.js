@@ -22,7 +22,7 @@ export const CRT_TIMINGS = Object.freeze({
   modemDuration: 4000,
   negotiatingAfter: 1650,
   identityAfter: 2200,
-  readyAfterConnection: 300,
+  readyAfterConnection: 0,
   enter: 480
 });
 
@@ -69,6 +69,10 @@ export class CrtStateMachine {
     this.schedule(() => {
       if (this.state === CRT_STATES.SKIPPED || this.state === CRT_STATES.DONE) return;
       this.#setState(state);
+      if (state === CRT_STATES.READY) {
+        this.enter();
+        return;
+      }
       this.#scheduleNextCue();
     }, delay);
   }
