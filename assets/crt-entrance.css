@@ -1,7 +1,5 @@
 .crt-entrance{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;overflow:hidden;background:#020302;color:#b6ffbd;padding:max(14px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
 .crt-entrance[hidden]{display:none}
-html[data-crt-pending="true"] body>.skip-link,html[data-crt-pending="true"] body>.site-header,html[data-crt-pending="true"] body>#mobile-nav,html[data-crt-pending="true"] body>#main,html[data-crt-pending="true"] body>.site-footer{visibility:hidden}
-html[data-crt-pending="true"] #crt-entrance[hidden]{display:grid!important}
 .crt-stage{position:relative;width:min(95vw,calc(133.333svh - 64px),1360px);display:flex;flex-direction:column;align-items:center;justify-content:center}
 .crt-monitor{position:relative;width:100%;aspect-ratio:1448/1086;isolation:isolate}
 .crt-monitor:after{content:"";position:absolute;z-index:-1;left:13%;right:13%;bottom:2%;height:3%;border-radius:50%;background:#000;filter:blur(15px);opacity:.68}
