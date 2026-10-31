@@ -21,7 +21,7 @@ const expectedRoutes = [
   path.join('live', 'experiments', 'index.html'), path.join('live', 'timeline', 'index.html'), path.join('research', 'index.html'),
   path.join('research', 'verification-and-claim-scope', 'index.html'), path.join('research', 'methods', 'index.html'),
   path.join('live', 'capabilities', 'index.html'), path.join('community', 'index.html'),
-  path.join('community', 'request-experiment', 'index.html'), path.join('docs', 'index.html'), path.join('about', 'index.html')
+  path.join('community', 'request-experiment', 'index.html'), path.join('docs', 'index.html'), path.join('about', 'index.html'), path.join('contact', 'index.html')
 ];
 for (const route of expectedRoutes) if (!files.includes(route)) problems.push(`required public route is missing: ${route}`);
 let publicText = '';

@@ -2,9 +2,9 @@
 
 ## Launch status (2026-10-31)
 
-GitHub reports that Discussions are enabled for `LarityLabs/whatslari-site`. The site build emits the supplied repository/category IDs and page-specific canonical-path configuration on every eligible route. Local browser execution against GitHub’s hosted giscus iframe has not yet been verified, so do not treat successful local generation as proof that reading, replies, or reactions work on the deployed domain. Verify the hosted iframe after Pages deployment.
+GitHub Discussions are enabled for `LarityLabs/whatslari-site`, and the giscus GitHub App is installed. The site build emits the configured repository/category IDs and page-specific canonical-path settings on each eligible route. Six approved article discussions have been seeded and their GitHub pages verified (see the table below). The live giscus iframe still needs hosted-domain verification after this release; discussion-page availability alone does not prove the embed, theme synchronization, replies, or reactions work on whatslari.com.
 
-The separate `experiment-requests` template is present at `.github/DISCUSSION_TEMPLATE/experiment-requests.yml`; its filename matches the configured request URL slug. The public repository was empty during inspection, so this template must reach the default branch before it can be selected. The available GitHub repository API does not expose Discussions category management; verify that an **Experiment Requests** category with slug `experiment-requests` exists, or create it in the repository’s Discussions settings and associate this template. The request form hands off to that category and does not submit until the visitor reviews and confirms on GitHub.
+The separate **Experiment Requests** category was created in repository settings as an open-ended discussion category. Its verified handoff slug is `experiment-requests`, matching both the native request form and `.github/DISCUSSION_TEMPLATE/experiment-requests.yml`. The form keeps a local review and copy step; GitHub requires the visitor to review and submit the proposal there.
 
 The site embeds giscus using the owner-confirmed configuration in `site.config.json`:
 
@@ -18,7 +18,20 @@ The site embeds giscus using the owner-confirmed configuration in `site.config.j
 
 The generated discussion sections appear on `/live/`, `/live/experiments/`, `/live/capabilities/`, `/live/timeline/`, `/research/`, `/research/methods/`, `/research/verification-and-claim-scope/`, `/community/`, and each **approved** `/live/experiments/{id}/` detail page. They are not generated for candidate articles, the request form, or legacy redirect routes. The snapshot remains the sole source of approved experiment detail pages.
 
-Each eligible page declares `meta[name="giscus:backlink"]` with its canonical trailing-slash URL and uses `pathname` mapping, so query strings do not create separate discussions or backlinks. Keep canonical URLs stable. With strict matching enabled, a matching discussion must contain giscus’s hash for its generated title; giscus includes it when it creates a new discussion. Do not reuse the Community welcome thread as a page comment thread. The widget creates no discussion during page load; a new page discussion may be created when a visitor submits their first comment or reaction after GitHub authorization.
+Each eligible page declares `meta[name="giscus:backlink"]` with its canonical trailing-slash URL and uses `pathname` mapping, so query strings do not create separate discussions or backlinks. Keep canonical URLs stable. With strict matching enabled, giscus hashes the page's mapped search term (the canonical pathname here) and finds that SHA-1 in the discussion body; the six seeded discussions carry the corresponding `<!-- sha1: … -->` marker. giscus adds its marker automatically when it creates a new thread. Do not reuse the Community welcome thread as a page comment thread. The widget creates no discussion during page load; a new page discussion may be created when a visitor submits their first comment or reaction after GitHub authorization.
+
+### Seeded approved-article discussions
+
+| Article route | GitHub Discussion |
+| --- | --- |
+| `/live/experiments/blank-workspace-javascript-construction/` | [#2](https://github.com/LarityLabs/whatslari-site/discussions/2) |
+| `/live/experiments/go-planner-research-to-construction/` | [#3](https://github.com/LarityLabs/whatslari-site/discussions/3) |
+| `/live/experiments/stateful-relational-induction/` | [#4](https://github.com/LarityLabs/whatslari-site/discussions/4) |
+| `/live/experiments/five-bounded-coding-lanes/` | [#5](https://github.com/LarityLabs/whatslari-site/discussions/5) |
+| `/live/experiments/recap-bounded-language-and-composition/` | [#6](https://github.com/LarityLabs/whatslari-site/discussions/6) |
+| `/live/experiments/learning-state-verification-and-rollback/` | [#7](https://github.com/LarityLabs/whatslari-site/discussions/7) |
+
+Each seed is in `Announcements`, links to its approved public article, and includes a SHA-1 marker for the canonical pathname required by strict matching. The discussion content retains the article's scoped result and limits and invites methods-focused replies. No held research was included.
 
 The site requests discussion metadata and displays comment/reaction counts only after giscus sends metadata for a matching existing thread. No fallback or initial state invents counts. A load error shows a GitHub Discussions link. Reading is embedded; replying and reacting require GitHub authorization as prompted by GitHub.
 
