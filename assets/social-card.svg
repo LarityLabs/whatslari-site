@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#050908"/>
+  <path d="M72 75H1128V555H72Z" fill="none" stroke="#2E5A3F"/>
+  <image href="lari-glyph.svg" x="110" y="150" width="230" height="262"/>
+  <text x="410" y="264" fill="#F0F0E6" font-family="Georgia,serif" font-size="68">Intelligence you can own.</text>
+  <text x="410" y="350" fill="#F0F0E6" font-family="Georgia,serif" font-size="68">Learning you can verify.</text>
+  <text x="410" y="424" fill="#00FF66" font-family="Arial,sans-serif" font-size="20" letter-spacing="3">LARI · LOCAL AUTONOMOUS RECURSIVE INTELLIGENCE</text>
+  <text x="110" y="520" fill="#AEB7AE" font-family="monospace" font-size="18" letter-spacing="2">INDEPENDENT RESEARCH BY LARITY LABS</text>
+</svg>

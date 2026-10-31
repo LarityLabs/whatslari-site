@@ -1,0 +1,119 @@
+.crt-entrance{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;overflow:hidden;background:#020302;color:#b6ffbd;padding:max(14px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
+.crt-entrance[hidden]{display:none}
+.crt-stage{position:relative;width:min(95vw,110svh,1100px);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.crt-monitor{position:relative;width:100%;aspect-ratio:1448/1086;isolation:isolate}
+.crt-monitor:after{content:"";position:absolute;z-index:-1;left:13%;right:13%;bottom:2%;height:3%;border-radius:50%;background:#000;filter:blur(15px);opacity:.68}
+.crt-monitor>svg{display:block;width:100%;height:100%;overflow:visible}
+.crt-sticky-overlay{position:absolute;z-index:1;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.crt-screen{fill:#010302}
+.crt-scanlines,.crt-static{opacity:0;pointer-events:none}
+.crt-ignition{fill:url(#crt-raster-gradient);opacity:0;transform-box:fill-box;transform-origin:center;filter:drop-shadow(0 0 9px rgba(0,255,102,.24))}
+.crt-ignition-bloom{fill:#61ff83;opacity:0;transform-box:fill-box;transform-origin:center;filter:blur(17px)}
+.crt-ignition-core{fill:#f4fff4;opacity:0;filter:drop-shadow(0 0 5px #a4ffb5) drop-shadow(0 0 13px rgba(93,255,126,.68))}
+.crt-glyph{opacity:0;fill:none;pointer-events:none}
+.crt-glyph-stroke{fill:none;stroke:#9affab;stroke-width:14;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 2px rgba(98,255,126,.56))}
+.crt-glyph-block{fill:#9affab;opacity:0;filter:drop-shadow(0 0 2px rgba(98,255,126,.56))}
+.crt-identity{opacity:0;fill:#adffb7;filter:drop-shadow(0 0 2px rgba(88,255,116,.38));pointer-events:none}
+.crt-connection-status{font-size:clamp(12px,1.7vw,24px);letter-spacing:.025em}
+#crt-wordmark{font-size:clamp(26px,3.6vw,52px)}
+#crt-expansion-1,#crt-expansion-2{font-size:clamp(12px,2.1vw,30px)}
+#crt-tagline-1,#crt-tagline-2{font-size:clamp(11px,1.7vw,24px)}
+#crt-prompt{font-size:clamp(13px,1.9vw,28px)}
+.crt-prompt-text{opacity:0}
+#screen-effects{opacity:0;transition:opacity .3s ease}
+#screen-glass-highlight{stroke:#e5ffe9;stroke-opacity:.09}
+#phosphor-edge{stroke:#49ff72;stroke-opacity:.12}
+#led-halo,#led-lit{transition:opacity .18s ease}
+/* Source coordinates below are measured in the 1448 x 1086 Gateway SVG viewBox. */
+.crt-physical-power,.crt-screen-power,.crt-enter-hotspot,.crt-sticky-target{position:absolute;padding:0;margin:0;border:0;background:transparent;appearance:none;cursor:pointer;z-index:2}
+.crt-physical-power{left:78.5221%;top:79.7422%;width:max(44px,5.25%);height:max(44px,5.25%);transform:translate(-50%,-50%);z-index:5}
+.crt-physical-power,.crt-screen-power{border-radius:50%}
+.crt-sticky-target{left:88.2597%;top:81.9521%;width:10.36%;height:8.56%;transform:translate(-50%,-50%) rotate(-3deg);border-radius:3px;z-index:4}
+.crt-screen-power{left:17.1%;top:12.3%;width:63.2%;height:57%;border-radius:12%;z-index:1}
+.crt-enter-hotspot{left:33%;top:59.7%;width:34%;height:9%;border-radius:4px;z-index:3}
+.crt-physical-power:focus-visible,.crt-screen-power:focus-visible,.crt-enter-hotspot:focus-visible,.crt-sticky-target:focus-visible{outline:2px solid rgba(177,255,190,.75);outline-offset:2px;box-shadow:0 0 12px rgba(102,255,129,.3)}
+.crt-physical-power:focus-visible{outline-offset:8px}
+.crt-physical-power:active{transform:translate(-50%,-50%)}
+.crt-physical-power:after{content:"";position:absolute;inset:9px;border:1px solid rgba(35,27,15,.55);border-radius:50%;opacity:0;box-shadow:inset 0 2px 4px rgba(0,0,0,.38);transition:opacity .08s ease,transform .08s ease}
+#crt-entrance.state-powering-on .crt-physical-power:after{opacity:.72;transform:translateY(1px)}
+#crt-power-press-mark{opacity:0;transform-box:fill-box;transform-origin:center;pointer-events:none}
+#crt-entrance.state-powering-on #crt-power-press-mark{animation:crt-button-press .22s ease-out both}
+.crt-physical-power:disabled,.crt-screen-power:disabled,.crt-enter-hotspot:disabled,.crt-sticky-target:disabled{cursor:default}
+.crt-utility{display:flex;align-items:center;justify-content:center;margin-top:clamp(5px,1vh,12px)}
+.crt-skip-link{padding:5px 6px;border:0;background:transparent;color:#84988a;font:11px/1.3 'Cascadia Code','SFMono-Regular',Consolas,monospace;letter-spacing:.06em;text-decoration:none;opacity:.78;cursor:pointer;transition:color .15s ease,opacity .15s ease}
+.crt-skip-link:hover{color:#c5ffd0;opacity:1;text-decoration:underline;text-underline-offset:4px}
+.crt-skip-link:focus-visible{outline:2px solid #9affab;outline-offset:3px;color:#d3ffdb;opacity:1}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+#crt-entrance.state-powering-on #led-lit{opacity:1!important}
+#crt-entrance.state-powering-on #led-halo{opacity:.12!important}
+#crt-entrance.state-tube-ignition #led-lit,#crt-entrance.state-initializing #led-lit,#crt-entrance.state-modem-connecting #led-lit,#crt-entrance.state-modem-negotiating #led-lit,#crt-entrance.state-identity-reveal #led-lit,#crt-entrance.state-connection-established #led-lit,#crt-entrance.state-ready #led-lit{opacity:1!important}
+#crt-entrance.state-tube-ignition #led-halo,#crt-entrance.state-initializing #led-halo,#crt-entrance.state-modem-connecting #led-halo,#crt-entrance.state-modem-negotiating #led-halo,#crt-entrance.state-identity-reveal #led-halo,#crt-entrance.state-connection-established #led-halo,#crt-entrance.state-ready #led-halo{opacity:.16!important}
+#crt-entrance.state-tube-ignition #screen-effects,#crt-entrance.state-initializing #screen-effects,#crt-entrance.state-modem-connecting #screen-effects,#crt-entrance.state-modem-negotiating #screen-effects,#crt-entrance.state-identity-reveal #screen-effects,#crt-entrance.state-connection-established #screen-effects,#crt-entrance.state-ready #screen-effects{opacity:1}
+#crt-entrance.state-powering-on #crt-note-peel{animation:crt-note-peel .24s cubic-bezier(.2,.8,.3,1) both}
+#crt-entrance.state-tube-ignition .crt-sticky-overlay,#crt-entrance.state-initializing .crt-sticky-overlay,#crt-entrance.state-modem-connecting .crt-sticky-overlay,#crt-entrance.state-modem-negotiating .crt-sticky-overlay,#crt-entrance.state-identity-reveal .crt-sticky-overlay,#crt-entrance.state-connection-established .crt-sticky-overlay,#crt-entrance.state-ready .crt-sticky-overlay{visibility:hidden}
+#crt-entrance.state-tube-ignition #crt-ignition-bloom{animation:crt-bloom .42s ease-out both}
+#crt-entrance.state-tube-ignition #crt-ignition-core{animation:crt-ignition-line .42s ease-out both}
+#crt-entrance.state-tube-ignition .crt-ignition{animation:crt-raster-expand .42s cubic-bezier(.16,.66,.26,1) both}
+#crt-entrance.state-tube-ignition .crt-scanlines{opacity:.16;animation:crt-raster-settle .42s ease-out both}
+#crt-entrance.state-tube-ignition #screen-glass-highlight{stroke-opacity:.19}
+#crt-entrance.state-initializing .crt-scanlines,#crt-entrance.state-modem-connecting .crt-scanlines,#crt-entrance.state-modem-negotiating .crt-scanlines,#crt-entrance.state-identity-reveal .crt-scanlines,#crt-entrance.state-connection-established .crt-scanlines,#crt-entrance.state-ready .crt-scanlines{opacity:.46}
+#crt-entrance.state-initializing .crt-static{animation:crt-static-fade .55s steps(4,end) both}
+#crt-entrance.state-initializing .crt-scanlines{animation:crt-raster-settle .42s ease-out both}
+#crt-entrance.state-initializing .crt-glyph{opacity:1;animation:crt-warm .72s .02s ease-out both}
+#crt-entrance.state-initializing .crt-glyph-stroke{animation:crt-draw .26s calc(.1s + var(--part-index)*.045s) ease-out forwards}
+#crt-entrance.state-initializing .crt-glyph-block{animation:crt-block .16s .56s steps(1,end) forwards}
+#crt-entrance.state-modem-connecting .crt-glyph,#crt-entrance.state-modem-negotiating .crt-glyph,#crt-entrance.state-identity-reveal .crt-glyph,#crt-entrance.state-connection-established .crt-glyph,#crt-entrance.state-ready .crt-glyph{opacity:1}
+#crt-entrance.state-modem-connecting .crt-glyph-stroke,#crt-entrance.state-modem-negotiating .crt-glyph-stroke,#crt-entrance.state-identity-reveal .crt-glyph-stroke,#crt-entrance.state-connection-established .crt-glyph-stroke,#crt-entrance.state-ready .crt-glyph-stroke{stroke-dashoffset:0}
+#crt-entrance.state-modem-connecting .crt-glyph-block,#crt-entrance.state-modem-negotiating .crt-glyph-block,#crt-entrance.state-identity-reveal .crt-glyph-block,#crt-entrance.state-connection-established .crt-glyph-block,#crt-entrance.state-ready .crt-glyph-block{opacity:1}
+#crt-entrance.state-modem-connecting .crt-identity,#crt-entrance.state-modem-negotiating .crt-identity,#crt-entrance.state-identity-reveal .crt-identity,#crt-entrance.state-connection-established .crt-identity,#crt-entrance.state-ready .crt-identity{opacity:1}
+#crt-entrance.state-ready .crt-connection-status{opacity:0}
+#crt-entrance.state-ready .crt-prompt-text{opacity:1}
+#crt-entrance.state-ready #crt-cursor{animation:crt-cursor .92s steps(2,end) infinite}
+#crt-entrance.state-entering{animation:crt-exit .48s ease-in forwards;pointer-events:none}
+#crt-entrance.state-entering #screen-opening{transform-box:fill-box;transform-origin:center;animation:crt-collapse .48s cubic-bezier(.3,.7,.2,1) forwards}
+#main.crt-page-reveal{animation:crt-page-reveal .62s ease-out both}
+@keyframes crt-ignition-line{0%{opacity:0;transform:scaleY(.2)}10%{opacity:.95;transform:scaleY(1)}28%{opacity:.9}100%{opacity:0}}
+@keyframes crt-bloom{0%,6%{opacity:0;transform:scaleY(.015)}16%{opacity:.54;transform:scaleY(.11)}58%{opacity:.22;transform:scaleY(38)}100%{opacity:0;transform:scaleY(86)}}
+@keyframes crt-raster-expand{0%,6%{opacity:0;transform:scaleY(.006)}17%{opacity:.74;transform:scaleY(.018)}62%{opacity:.62;transform:scaleY(.94)}100%{opacity:0;transform:scaleY(1)}}
+@keyframes crt-note-peel{0%{opacity:1;transform:translate(0,0) rotate(0)}38%{opacity:.96;transform:translate(2px,-2px) rotate(-2deg)}100%{opacity:0;transform:translate(8px,4px) rotate(9deg)}}
+@keyframes crt-note-fade{to{opacity:0}}
+@keyframes crt-button-press{0%{opacity:0;transform:scale(1.15)}18%{opacity:.82;transform:scale(1)}100%{opacity:0;transform:scale(.86)}}
+@keyframes crt-draw{to{stroke-dashoffset:0}}
+@keyframes crt-block{to{opacity:1}}
+@keyframes crt-warm{0%{filter:brightness(.75)}30%{filter:brightness(1.03)}49%{filter:brightness(.94)}68%{filter:brightness(1.025)}100%{filter:brightness(1)}}
+@keyframes crt-static-fade{0%,12%{opacity:.22}24%{opacity:.08}35%{opacity:.17}55%,100%{opacity:0}}
+@keyframes crt-raster-settle{0%,20%{transform:translateX(3px)}55%{transform:translateX(-1px)}100%{transform:translateX(0)}}
+@keyframes crt-cursor{50%{opacity:.18}}
+@keyframes crt-collapse{0%,28%{transform:scaleY(1);opacity:1}66%{transform:scaleY(.012);opacity:1}86%{transform:scaleY(.012) scaleX(.025);opacity:1}100%{transform:scale(0);opacity:0}}
+@keyframes crt-exit{0%{opacity:1;filter:brightness(1)}30%{opacity:1;filter:brightness(1.32)}100%{opacity:0;filter:brightness(1.8)}}
+@keyframes crt-page-reveal{0%{opacity:.28;filter:brightness(.82)}100%{opacity:1;filter:brightness(1)}}
+@media(hover:none){#crt-entrance.state-off .crt-screen-power{pointer-events:auto}#crt-entrance:not(.state-off) .crt-screen-power{pointer-events:none}}
+@media(hover:hover){.crt-screen-power{pointer-events:none}}
+@media(max-width:640px){.crt-stage{width:min(96vw,110svh)}.crt-physical-power{width:max(44px,8.5%);height:max(44px,8.5%)}.crt-utility{margin-top:5px}.crt-skip-link{font-size:10px}}
+@media(max-height:460px) and (orientation:landscape){.crt-stage{width:min(91vw,110svh)}.crt-utility{margin-top:2px}.crt-skip-link{padding:2px 6px}}
+@media(prefers-reduced-motion:reduce){.crt-entrance *,.crt-entrance *:before,.crt-entrance *:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-delay:0ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.crt-entrance.state-powering-on .crt-sticky-overlay,.crt-entrance.state-tube-ignition .crt-sticky-overlay,.crt-entrance.state-initializing .crt-sticky-overlay{display:none!important}.crt-entrance.state-tube-ignition .crt-ignition,.crt-entrance.state-tube-ignition .crt-ignition-bloom,.crt-entrance.state-tube-ignition .crt-ignition-core{opacity:0!important}.crt-entrance.state-initializing .crt-static{opacity:0}.crt-entrance.state-initializing .crt-glyph{opacity:1}.crt-entrance.state-initializing .crt-glyph-stroke{stroke-dashoffset:0}.crt-entrance.state-initializing .crt-glyph-block{opacity:1}}
+
+/* Three-scale phosphor emission. The filter operates on the glyph's actual drawn paths and live text. */
+#crt-phosphor-wash{opacity:0;pointer-events:none}
+.crt-glyph{filter:url(#crt-phosphor-glow)}
+.crt-glyph-stroke{stroke:#00FF66;filter:none}
+.crt-glyph-block{fill:#00FF66;filter:none}
+.crt-identity{fill:#00FF66;filter:url(#crt-phosphor-glow)}
+#crt-cursor{filter:drop-shadow(0 0 2px #d9ffe6) drop-shadow(0 0 7px rgba(0,255,102,.68))}
+#crt-prompt{filter:drop-shadow(0 0 2px rgba(0,255,102,.58))}
+#screen-effects #phosphor-edge{stroke:#00FF66;stroke-opacity:.14}
+#crt-entrance.state-tube-ignition #crt-phosphor-wash{opacity:.92;animation:crt-macro-warm .56s ease-out both}
+#crt-entrance.state-initializing #crt-phosphor-wash,#crt-entrance.state-modem-connecting #crt-phosphor-wash,#crt-entrance.state-modem-negotiating #crt-phosphor-wash,#crt-entrance.state-identity-reveal #crt-phosphor-wash,#crt-entrance.state-connection-established #crt-phosphor-wash,#crt-entrance.state-ready #crt-phosphor-wash{opacity:.62}
+#crt-entrance.state-tube-ignition #crt-ignition-core{animation:crt-ignition-line 1.05s ease-out both;transform-box:fill-box;transform-origin:center}
+#crt-entrance.state-tube-ignition .crt-ignition{animation:crt-raster-expand .9s .14s cubic-bezier(.16,.66,.26,1) both}
+#crt-entrance.state-tube-ignition #crt-ignition-bloom{animation:crt-bloom .92s .12s ease-out both;filter:blur(8px)}
+#crt-entrance.state-tube-ignition .crt-scanlines{opacity:.22;animation:crt-raster-settle .72s ease-out both}
+#crt-entrance.state-initializing .crt-scanlines,#crt-entrance.state-modem-connecting .crt-scanlines,#crt-entrance.state-modem-negotiating .crt-scanlines,#crt-entrance.state-identity-reveal .crt-scanlines,#crt-entrance.state-connection-established .crt-scanlines,#crt-entrance.state-ready .crt-scanlines{opacity:.36}
+#crt-entrance.state-ready #crt-wordmark,#crt-entrance.state-ready #crt-expansion-1,#crt-entrance.state-ready #crt-expansion-2,#crt-entrance.state-ready #crt-tagline-1,#crt-entrance.state-ready #crt-tagline-2{filter:url(#crt-phosphor-glow)}
+@keyframes crt-ignition-line{0%,9%{opacity:0;transform:scaleY(.16)}13%{opacity:.98;transform:scaleY(1)}55%{opacity:.96;transform:scaleY(1)}72%{opacity:.64;transform:scaleY(.9)}100%{opacity:0;transform:scaleY(.55)}}
+@keyframes crt-raster-expand{0%{opacity:0;transform:scaleY(.004)}10%{opacity:1;transform:scaleY(.035)}62%{opacity:.86;transform:scaleY(1.02)}82%{opacity:.72;transform:scaleY(1)}100%{opacity:0;transform:scaleY(1)}}
+@keyframes crt-bloom{0%,8%{opacity:0;transform:scaleY(.012)}24%{opacity:.48;transform:scaleY(7)}62%{opacity:.28;transform:scaleY(44)}100%{opacity:0;transform:scaleY(68)}}
+@keyframes crt-macro-warm{0%{opacity:1}35%{opacity:.76}100%{opacity:.62}}
+
+/* Reduced-motion users get a steady low-intensity raster, not a flash or animated sweep. */
+@media(prefers-reduced-motion:reduce){#crt-entrance.state-tube-ignition #crt-phosphor-wash{opacity:.72!important;animation:none!important}#crt-entrance.state-tube-ignition .crt-ignition{opacity:.72!important;transform:scaleY(1)!important;animation:none!important}#crt-entrance.state-tube-ignition #crt-ignition-bloom,#crt-entrance.state-tube-ignition #crt-ignition-core{opacity:0!important;animation:none!important}}

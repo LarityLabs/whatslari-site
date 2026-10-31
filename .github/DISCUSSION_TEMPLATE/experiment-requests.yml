@@ -1,0 +1,64 @@
+title: "[Experiment request] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Experiment requests are proposals for human review. Submitting one does not guarantee that it will be accepted or run. Do not include private data, credentials, or unpublished source material.
+  - type: input
+    id: experiment-title
+    attributes:
+      label: Experiment title
+      description: Give the proposed test a concise name.
+      placeholder: "Example: Does the behavior persist after a fresh session?"
+    validations:
+      required: true
+  - type: textarea
+    id: research-question
+    attributes:
+      label: Research question
+      description: What specific behavior or uncertainty should the test examine?
+      placeholder: State one question that could be answered by an observable test.
+    validations:
+      required: true
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: Hypothesis
+      description: What do you expect to happen, and why?
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-test
+    attributes:
+      label: Proposed test or scenario
+      description: Describe the setup, inputs, and comparison or baseline.
+    validations:
+      required: true
+  - type: textarea
+    id: observable-outcome
+    attributes:
+      label: Expected observable outcome
+      description: What result could another person directly inspect?
+    validations:
+      required: true
+  - type: textarea
+    id: success-failure-criteria
+    attributes:
+      label: Suggested success and failure criteria
+      description: What outcomes would support or contradict the hypothesis?
+    validations:
+      required: true
+  - type: textarea
+    id: why-it-matters
+    attributes:
+      label: Why this experiment matters
+      description: Explain its research value or the uncertainty it would reduce.
+    validations:
+      required: true
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add relevant context, related public work, or constraints.
+    validations:
+      required: false

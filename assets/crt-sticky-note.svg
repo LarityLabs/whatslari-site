@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="crt-sticky-overlay" viewBox="0 0 1448 1086" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false" pointer-events="none">
+  <defs>
+    <filter id="sticky-paper-shadow" x="-35%" y="-35%" width="180%" height="190%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="5" result="soft-edge"/>
+      <feOffset dx="3" dy="7" result="paper-offset"/>
+      <feComponentTransfer><feFuncA type="linear" slope=".27"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="sticky-paper-grain" width="17" height="15" patternUnits="userSpaceOnUse">
+      <path d="M1 4h5m4 8h3m1-10h2M3 14h2" stroke="#a38635" stroke-width=".75" opacity=".22"/>
+      <circle cx="9" cy="3" r=".7" fill="#8d7430" opacity=".2"/>
+    </pattern>
+    <linearGradient id="sticky-paper-light" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#fff0a0"/>
+      <stop offset=".58" stop-color="#f3df82"/>
+      <stop offset="1" stop-color="#e7cf6f"/>
+    </linearGradient>
+  </defs>
+  <g id="crt-note-peel">
+    <g id="crt-sticky-arrow" fill="none" stroke="#514526" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" opacity=".96">
+      <!-- Tail begins beneath the sheet and emerges from its upper-left edge; tip stops just outside the power-button rim at (1137,866). -->
+      <path d="M1230 864 C1207 856 1186 856 1173 866"/>
+      <path d="M1173 866 L1186 858 M1173 866 L1186 874" stroke-width="4.5"/>
+      <path d="M1230 867 C1207 859 1187 859 1174 869" stroke="#fff4bf" stroke-width="1.35" opacity=".55"/>
+    </g>
+    <g id="crt-sticky-note" transform="rotate(-3 1278 890)">
+      <path d="M1205 844 Q1207 841 1211 842 L1351 842 Q1355 843 1354 847 L1354 935 L1342 938 L1206 935 Z" fill="url(#sticky-paper-light)" stroke="#d3bd62" stroke-width="2" filter="url(#sticky-paper-shadow)"/>
+      <path d="M1208 847 L1351 846 L1351 933 L1342 935 L1208 932 Z" fill="url(#sticky-paper-grain)" opacity=".72" pointer-events="none"/>
+      <path d="M1342 938 L1341 922 Q1347 925 1354 920 L1354 935 Z" fill="#e3cb6b" opacity=".76"/>
+      <path d="M1250 842 L1291 842 L1289 854 L1248 854 Z" fill="#eee7d2" stroke="#d3cab1" stroke-width="1" opacity=".88"/>
+      <path d="M1253 844 L1288 844 L1287 851 L1252 851 Z" fill="#fffdf2" opacity=".35"/>
+      <text x="1279" y="901" text-anchor="middle" textLength="131" lengthAdjust="spacingAndGlyphs" font-family="Comic Sans MS, Segoe Print, Bradley Hand, cursive" font-size="31" font-weight="700" letter-spacing=".35" fill="#30291e" stroke="#30291e" stroke-width=".55" paint-order="stroke">PUSH ME!</text>
+      <path d="M1217 911 Q1227 915 1238 912" fill="none" stroke="#ad9144" stroke-width="1.2" opacity=".36"/>
+    </g>
+  </g>
+</svg>

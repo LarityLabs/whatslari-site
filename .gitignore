@@ -1,0 +1,57 @@
+# Build and local preview output
+/dist/
+/tmp/
+/node_modules/
+/coverage/
+/playwright-report/
+/test-results/
+/screenshots/
+/artifacts/
+/logs/
+tools/social-cards-contact-sheet.png
+/.codex/
+/.agents/
+
+# Unapproved/private review material
+/private-review/
+/.playwright/
+/playwright/.cache/
+*.trace.zip
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.envrc
+
+# Local secrets and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.p8
+*.jks
+*.keystore
+*.pfx
+*.secret
+
+# Logs, caches, and editor/OS state
+*.log
+.npm/
+.cache/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+__pycache__/
+*.py[cod]
+*.tmp
+*.bak
+*.orig
+*.swp
+
+# Internal workspace reconnaissance
+/RECONNAISSANCE.md

@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
+import { validateSnapshot, scanPublicText } from './data-schema.mjs';
+
+const empty = { schemaVersion: 2, status: 'no-approved-public-data', snapshotId: null, publishedAt: null, generatedAt: null, entryCount: 0, sourceReport: null, previousSnapshotId: null, contentDigest: null, experiments: [], capabilities: [], milestones: [], metrics: [] };
+assert.deepEqual(validateSnapshot(empty), []);
+const validRecord = { id: 'bounded-test', title: 'Bounded test', summary: 'A concise reviewed result.', status: 'demonstrated', sourceRecordId: 'record-1', measuredAt: '2026-01-01T00:00:00Z', evaluationMethod: 'Declared acceptance checks', verificationStatus: 'verified', reportVersion: 'report-1', publishedAt: '2026-01-02T00:00:00Z' };
+const approved = records => { const value = { ...empty, status: 'approved', snapshotId: 'snapshot-20260102030405', publishedAt: '2026-01-02T00:00:00Z', entryCount: records.length, sourceReport: { version:'Owner-reviewed source snapshot' }, experiments:records }; value.contentDigest = crypto.createHash('sha256').update(JSON.stringify({ ...value, contentDigest:null })).digest('hex'); return value; };
+assert.deepEqual(validateSnapshot(approved([validRecord])), []);
+assert.ok(validateSnapshot(approved([validRecord])).every(error => !error.includes('source report')));
+assert.ok(validateSnapshot({ ...approved([validRecord]), sourceReport:{ version:'Owner-reviewed source snapshot', sha256:'a'.repeat(64) } }).some(error => error.includes('private source hashes')));
+assert.deepEqual(validateSnapshot(approved([{ ...validRecord, result: 'Passed one bounded example.', environment: 'Fixture-backed', measurements: { fixtureSources: 2, coldReload: true }, measurementConditions:'One fixture-backed run.' }])), []);
+assert.ok(validateSnapshot(approved([{ ...validRecord, measurements: { bad_key: {} } }])).some(error => error.includes('measurements')));
+assert.ok(validateSnapshot(approved([{ ...validRecord, verificationStatus: 'guaranteed' }])).some(error => error.includes('verificationStatus')));
+assert.ok(scanPublicText({ publicProvenance: 'D:\\Lari-workspace\\private\\report.md' }).some(error => error.includes('filesystem path')));
+assert.ok(validateSnapshot(approved([validRecord, { ...validRecord, id: 'bounded-test' }])).some(error => error.includes('unique')));
+assert.ok(validateSnapshot(approved([{ ...validRecord, architectureComponent:'made-up' }])).some(error => error.includes('architectureComponent')));
+const slash = String.fromCharCode(92);
+assert.ok(scanPublicText({ path: ['C:', 'Users', 'private', 'secret.txt'].join(slash) }).some(error => error.includes('filesystem path')));
+assert.ok(scanPublicText({ endpoint: ['192.168', '1.12'].join('.') }).some(error => error.includes('private network')));
+assert.ok(scanPublicText({ sourceRecordId: ['lari','learned','knowledge','abc'].join('.') }).some(error => error.includes('internal learned-record')));
+assert.deepEqual(scanPublicText({ summary: 'A reviewed result with no sensitive values.' }), []);
+process.stdout.write('Data schema and publication-safety tests passed.\n');

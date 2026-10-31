@@ -1,0 +1,56 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { validateApprovalSet, hashPublicContent } from './approval-validation.mjs';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const privateDir = path.join(root, 'private-review');
+const fixtureDir = await fs.mkdtemp(path.join(privateDir, 'pipeline-fixture-'));
+const outputPath = path.join(fixtureDir, 'scan.json');
+const fingerprint = 'a'.repeat(64);
+const reportPath = path.join(fixtureDir, 'fixture-report.md');
+try {
+  await fs.writeFile(path.join(fixtureDir, 'receipt.json'), '{"passed":true,"promoted":false}\n');
+  await fs.mkdir(path.join(fixtureDir,'workspace'),{recursive:true});
+  const fixtureReport = `# Fixture report\nGenerated: \`2026-10-31T12:00:00.000Z\`\nSource fingerprint: \`${fingerprint}\`\n\n### Candidate transfer result (2026-10-31)\nCandidate only; not promoted. This bounded isolated candidate has a narrow evaluation scope and is not an active production capability. [Receipt](receipt.json) [Workspace](workspace/)\n\n### Candidate transfer result (2026-10-31)\nDuplicate section with candidate evidence. This is a repeat title and date and must not appear as a second research candidate in the private index.\n\n### Failed Go research attempt (2026-10-30)\nFailure: no candidate generated. The current diagnostic records a bounded blocked attempt and does not establish a capability or successful transfer. [Missing receipt](missing.json)\n\n## Active production model\nActive production identity is described by this report only.\n`;
+  await fs.writeFile(reportPath, fixtureReport);
+  const run = spawnSync(process.execPath, [path.join(root, 'tools/research-scan.mjs')], { cwd:root, env:{ ...process.env, LARI_REPORT_PATH:reportPath, LARI_SCAN_OUTPUT_PATH:outputPath }, encoding:'utf8' });
+  assert.equal(run.status, 0, `fixture scan exits successfully: ${run.stderr}`);
+  const scan = JSON.parse(await fs.readFile(outputPath,'utf8'));
+  assert.equal(scan.source.sourceFingerprint, fingerprint, 'report fingerprint is read from source');
+  assert.equal(scan.source.generatedAt, '2026-10-31T12:00:00.000Z', 'report timestamp is extracted');
+  assert.equal(scan.meaningfulSectionsScanned, 2, 'substantive sections are indexed without treating the model overview as an experiment');
+  assert.equal(scan.duplicatesDetected, 1, 'same dated title sections are deduplicated');
+  assert.equal(scan.entries.find(item => item.title.startsWith('Candidate')).reportStatus, 'candidate/unpromoted (report-derived)', 'candidate state is preserved');
+  assert.equal(scan.entries.find(item => item.title.startsWith('Failed')).reportStatus, 'negative or blocked (report-derived)', 'negative state is preserved');
+  assert.equal(scan.entries.find(item => item.title.startsWith('Candidate')).references[0].exists, true, 'local evidence references resolve');
+  assert.equal(scan.entries.find(item => item.title.startsWith('Candidate')).references[1].type, 'directory', 'directory references are resolved without indexing their contents');
+  assert.ok(scan.unresolvedReferences.some(item => item.ref === 'missing.json'), 'broken evidence references are reported');
+  assert.ok(scan.entries.every(item => item.reportEvidenceClass.includes('not yet independently')), 'report-derived claims are not presented as artifact verified');
+  const changedFixtureReport = fixtureReport.replace('Candidate only; not promoted.', 'Failure: candidate was not promoted.');
+  await fs.writeFile(reportPath, changedFixtureReport);
+  const rescan = spawnSync(process.execPath, [path.join(root, 'tools/research-scan.mjs')], { cwd:root, env:{ ...process.env, LARI_REPORT_PATH:reportPath, LARI_SCAN_OUTPUT_PATH:outputPath }, encoding:'utf8' });
+  assert.equal(rescan.status, 0, `second fixture scan exits successfully: ${rescan.stderr}`);
+  const rescanned = JSON.parse(await fs.readFile(outputPath,'utf8'));
+  assert.equal(rescanned.entries.find(item => item.title.startsWith('Candidate')).statusChangedSinceLastScan, true, 'report status change is surfaced between scans');
+  assert.match(rescanned.entries.find(item => item.title.startsWith('Candidate')).changeStatus, /changed since last scan/, 'source changes are surfaced between scans');
+  await fs.writeFile(reportPath, fixtureReport);
+  const restore = spawnSync(process.execPath, [path.join(root, 'tools/research-scan.mjs')], { cwd:root, env:{ ...process.env, LARI_REPORT_PATH:reportPath, LARI_SCAN_OUTPUT_PATH:outputPath }, encoding:'utf8' });
+  assert.equal(restore.status, 0, `restored fixture scan exits successfully: ${restore.stderr}`);
+  const scanAfterRestore = JSON.parse(await fs.readFile(outputPath,'utf8'));
+  const report = fixtureReport;
+  const row = { id:'test-record', collection:'experiments', title:'Reviewed result', summary:'Narrow result.', status:'experimental', verificationStatus:'verified', sourceRecordId:'Public provenance', measuredAt:'2026-10-31', evaluationMethod:'Frozen test', reportVersion:'Fixture report', publishedAt:null, limitations:'One fixture only.' };
+  const receipt = { recordId:row.id, scanId:scanAfterRestore.entries[0].scanId, sectionSha256:scanAfterRestore.entries[0].sectionSha256, evidenceDigest:scanAfterRestore.entries[0].evidenceDigest, approvedContentSha256:hashPublicContent(row), decision:'approved', reviewer:'test owner' };
+  const approval = { schemaVersion:2, status:'approved', recordIds:[row.id], records:[receipt] };
+  assert.deepEqual(validateApprovalSet({ records:[row], approval, scan:scanAfterRestore, reportText:report }), [], 'explicit current record approval passes');
+  assert.ok(validateApprovalSet({ records:[{...row, summary:'Changed without review'}], approval, scan, reportText:report }).some(problem => problem.includes('content changed')), 'modified approved text is rejected');
+    assert.ok(validateApprovalSet({ records:[row], approval, scan:{...scanAfterRestore, entries:scanAfterRestore.entries.map((item,index) => index ? item : {...item, sectionSha256:'b'.repeat(64)})}, reportText:report }).some(problem => problem.includes('source section or linked evidence changed')), 'modified source section requires renewed review');
+    assert.ok(validateApprovalSet({ records:[row], approval, scan:{...scanAfterRestore, entries:scanAfterRestore.entries.map((item,index) => index ? item : {...item, evidenceDigest:'c'.repeat(64)})}, reportText:report }).some(problem => problem.includes('source section or linked evidence changed')), 'modified linked artifact requires renewed review');
+  assert.ok(validateApprovalSet({ records:[row], approval:{...approval,records:[]}, scan:scanAfterRestore, reportText:report }).some(problem => problem.includes('no explicit owner approval')), 'unapproved records fail closed');
+  process.stdout.write('Research scan, evidence resolution, status preservation, deduplication, and per-record approval tests passed.\n');
+} finally {
+  await fs.rm(fixtureDir, { recursive:true, force:true });
+}
