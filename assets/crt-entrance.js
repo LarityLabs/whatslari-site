@@ -78,11 +78,13 @@ export function mountCrtEntrance() {
     }
   };
 
-  function setPrompt(enabled) {
-    enterPrompt.disabled = !enabled;
-    enterPrompt.tabIndex = enabled ? 0 : -1;
-    enterPrompt.setAttribute('aria-disabled', String(!enabled));
-    prompt.setAttribute('aria-hidden', String(!enabled));
+  function setPrompt() {
+    // The ready state now transitions automatically; this legacy hotspot is
+    // kept disabled so it cannot intercept a click or keyboard activation.
+    enterPrompt.disabled = true;
+    enterPrompt.tabIndex = -1;
+    enterPrompt.setAttribute('aria-disabled', 'true');
+    prompt.setAttribute('aria-hidden', 'true');
   }
 
   function typeField(element, text, speed, done) {
@@ -125,7 +127,7 @@ export function mountCrtEntrance() {
     physicalPower.disabled = state !== CRT_STATES.OFF;
     screenPower.disabled = state !== CRT_STATES.OFF;
     stickyPower.disabled = state !== CRT_STATES.OFF;
-    setPrompt(state === CRT_STATES.READY);
+    setPrompt();
 
     const messages = {
       [CRT_STATES.OFF]: 'Display off. Press the Gateway power button to begin.',
@@ -136,8 +138,8 @@ export function mountCrtEntrance() {
       [CRT_STATES.MODEM_NEGOTIATING]: 'Negotiating connection.',
       [CRT_STATES.IDENTITY_REVEAL]: 'LARI identity loading.',
       [CRT_STATES.CONNECTION_ESTABLISHED]: 'Connection established.',
-      [CRT_STATES.READY]: 'System ready. Enter LARI when ready.',
-      [CRT_STATES.ENTERING]: 'Entering LARI.',
+      [CRT_STATES.READY]: 'System ready. Returning to the homepage.',
+      [CRT_STATES.ENTERING]: 'Returning to the homepage.',
       [CRT_STATES.SKIPPED]: 'Intro skipped.',
       [CRT_STATES.DONE]: 'Intro complete.'
     };
@@ -159,7 +161,7 @@ export function mountCrtEntrance() {
       playAudio(modemAudio);
       typeIdentity();
     }
-    if (state === CRT_STATES.READY) enterPrompt.focus();
+    if (state === CRT_STATES.READY) machine.enter();
   }
 
   function finish(reason) {
@@ -188,11 +190,9 @@ export function mountCrtEntrance() {
     if (!machine.start()) return;
     playAudio(powerAudio);
   };
-  const onEnter = event => { event.preventDefault(); machine.enter(); };
   const onSkip = event => { event.preventDefault(); machine.skip(); };
   const onKeydown = event => {
     if (event.key === 'Escape' && machine.state !== CRT_STATES.DONE) { machine.skip(); return; }
-    if (event.key === 'Enter' && machine.state === CRT_STATES.READY && !event.target.closest('button,a,input,textarea,select')) machine.enter();
     if (event.key === 'Tab') {
       const tabbables = [...entrance.querySelectorAll('button:not([disabled]),a[href]')].filter(element => element.tabIndex >= 0);
       if (!tabbables.length) return;
@@ -206,7 +206,6 @@ export function mountCrtEntrance() {
     physicalPower.removeEventListener('click', onPhysicalPower);
     screenPower.removeEventListener('click', onScreenPower);
     stickyPower.removeEventListener('click', onPhysicalPower);
-    enterPrompt.removeEventListener('click', onEnter);
     skip.removeEventListener('click', onSkip);
     document.removeEventListener('keydown', onKeydown);
     window.removeEventListener('pagehide', dispose);
@@ -215,7 +214,6 @@ export function mountCrtEntrance() {
   physicalPower.addEventListener('click', onPhysicalPower);
   screenPower.addEventListener('click', onScreenPower);
   stickyPower.addEventListener('click', onPhysicalPower);
-  enterPrompt.addEventListener('click', onEnter);
   skip.addEventListener('click', onSkip);
   document.addEventListener('keydown', onKeydown);
   window.addEventListener('pagehide', dispose, { once: true });
