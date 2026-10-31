@@ -68,7 +68,6 @@
 #crt-entrance.state-modem-connecting .crt-identity,#crt-entrance.state-modem-negotiating .crt-identity,#crt-entrance.state-identity-reveal .crt-identity,#crt-entrance.state-connection-established .crt-identity,#crt-entrance.state-ready .crt-identity{opacity:1}
 #crt-entrance.state-ready .crt-connection-status{opacity:0}
 #crt-entrance.state-ready .crt-prompt-text{opacity:1}
-#crt-entrance.state-ready #crt-cursor{animation:crt-cursor .92s steps(2,end) infinite}
 #crt-entrance.state-entering{animation:crt-exit .48s ease-in forwards;pointer-events:none}
 #crt-entrance.state-entering #screen-opening{transform-box:fill-box;transform-origin:center;animation:crt-collapse .48s cubic-bezier(.3,.7,.2,1) forwards}
 #main.crt-page-reveal{animation:crt-page-reveal .62s ease-out both}
@@ -83,7 +82,6 @@
 @keyframes crt-warm{0%{filter:brightness(.75)}30%{filter:brightness(1.03)}49%{filter:brightness(.94)}68%{filter:brightness(1.025)}100%{filter:brightness(1)}}
 @keyframes crt-static-fade{0%,12%{opacity:.22}24%{opacity:.08}35%{opacity:.17}55%,100%{opacity:0}}
 @keyframes crt-raster-settle{0%,20%{transform:translateX(3px)}55%{transform:translateX(-1px)}100%{transform:translateX(0)}}
-@keyframes crt-cursor{50%{opacity:.18}}
 @keyframes crt-collapse{0%,28%{transform:scaleY(1);opacity:1}66%{transform:scaleY(.012);opacity:1}86%{transform:scaleY(.012) scaleX(.025);opacity:1}100%{transform:scale(0);opacity:0}}
 @keyframes crt-exit{0%{opacity:1;filter:brightness(1)}30%{opacity:1;filter:brightness(1.32)}100%{opacity:0;filter:brightness(1.8)}}
 @keyframes crt-page-reveal{0%{opacity:.28;filter:brightness(.82)}100%{opacity:1;filter:brightness(1)}}
@@ -99,7 +97,6 @@
 .crt-glyph-stroke{stroke:#00FF66;filter:none}
 .crt-glyph-block{fill:#00FF66;filter:none}
 .crt-identity{fill:#00FF66;filter:url(#crt-phosphor-glow)}
-#crt-cursor{filter:drop-shadow(0 0 2px #d9ffe6) drop-shadow(0 0 7px rgba(0,255,102,.68))}
 #crt-prompt{filter:drop-shadow(0 0 2px rgba(0,255,102,.58))}
 #screen-effects #phosphor-edge{stroke:#00FF66;stroke-opacity:.14}
 #crt-entrance.state-tube-ignition #crt-phosphor-wash{opacity:.92;animation:crt-macro-warm .56s ease-out both}
