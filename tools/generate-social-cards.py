@@ -24,7 +24,7 @@ FONTS = {
 }
 
 CARDS = [
-    ("home", "DEVELOPING AI ARCHITECTURE", "Local intelligence.\nExecutable knowledge.", False),
+    ("home", "A DIFFERENT KIND OF AI MODEL", "Built to learn.\nDesigned to be yours.", False),
     ("how-it-works", "LARI ARCHITECTURE", "Structured state.\nGoverned execution.", True),
     ("live", "PUBLIC RESEARCH OBSERVATORY", "Evidence travels\nwith the claim.", True),
     ("experiments", "EXPERIMENT ARCHIVE", "Methods. Outcomes.\nLimitations.", False),
@@ -36,7 +36,7 @@ CARDS = [
     ("community", "LARI COMMUNITY LAB", "Ask. Discuss.\nPropose a test.", False),
     ("request-experiment", "COMMUNITY LAB", "Request an\nexperiment.", True),
     ("evidence-guide", "PUBLICATION STANDARD", "Evidence labels\nand their limits.", False),
-    ("about", "LARITY LABS", "Local Autonomous\nRecursive Intelligence.", True),
+    ("about", "LARITY LABS · OUR MISSION", "Intelligence you can own.\nLearning you can verify.", True),
 ]
 
 def fit_font(text, font, max_width):

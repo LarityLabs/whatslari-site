@@ -102,3 +102,5 @@
 @media(max-width:900px){.theme-control span{display:none}.site-header{gap:12px}.site-header .theme-control{margin-left:auto}}
 @media(max-width:640px){.site-header{flex-wrap:wrap}.brand-logo-switch{width:145px}.theme-control select{min-width:82px}.explorer-controls,.request-fields,.research-grid,.form-grid{grid-template-columns:1fr}.form-grid label:first-child,.form-grid label:nth-child(2),.form-grid label:nth-child(3),.form-grid label:nth-child(4),.form-grid label:nth-child(5),.form-grid label:nth-child(6),.form-grid label:nth-child(7){grid-column:1}.architecture-flow li{grid-template-columns:36px 1fr;gap:10px}}
 @media(max-width:640px){.comments{margin:24px 0 58px;padding-top:20px}.comments iframe.giscus-frame{margin-top:12px}}
+
+.hero-tagline{margin:18px 0 0;font:1.1rem/1.45 var(--serif);color:var(--ink)}
