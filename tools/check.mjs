@@ -13,7 +13,9 @@ const wrongExpansion = ['User-Owned', 'Learning Intelligence'].join(' ');
 const rightExpansion = 'Local Autonomous Recursive Intelligence';
 const files = await fs.readdir(path.join(root, 'dist'), { recursive: true });
 if (!files.includes('index.html') || !files.includes(path.join('live', 'index.html'))) problems.push('core static routes are missing');
-const htmlFiles = files.filter(file => String(file).endsWith('.html'));
+const htmlFiles = files.filter(file => String(file).endsWith(path.join('index.html')));
+const googleVerification = await fs.readFile(path.join(root, 'dist', 'google4aaa287e48ffc299.html'), 'utf8').catch(() => '');
+if (googleVerification !== 'google-site-verification: google4aaa287e48ffc299.html') problems.push('Google site verification file is missing or has unexpected content');
 const canonicalHtmlFiles = [];
 for (const file of htmlFiles) { const source = await fs.readFile(path.join(root, 'dist', file), 'utf8'); if (source.includes('name="robots" content="noindex,follow"')) { if (!source.includes('rel="canonical"') || !source.includes('location.replace(')) problems.push(`${file} legacy route is missing canonical redirect behavior`); } else canonicalHtmlFiles.push(file); }
 const expectedRoutes = [
