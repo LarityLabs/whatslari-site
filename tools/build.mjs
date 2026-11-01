@@ -166,6 +166,7 @@ await fs.cp(path.join(root, 'assets'), path.join(out, 'assets'), { recursive: tr
 await fs.cp(path.join(root, 'data/approved'), path.join(out, 'data'), { recursive: true });
 await fs.copyFile(path.join(root, 'robots.txt'), path.join(out, 'robots.txt'));
 await fs.copyFile(path.join(root, 'CNAME'), path.join(out, 'CNAME'));
+await fs.copyFile(path.join(root, 'google4aaa287e48ffc299.html'), path.join(out, 'google4aaa287e48ffc299.html'));
 const sitemap = Object.entries(meta).map(([route, info]) => {
   const baseDate = info.lastModified || config.contentUpdatedAt || snapshot.generatedAt;
   const snapshotDate = route === '/live/' && snapshot.generatedAt ? snapshot.generatedAt : null;
