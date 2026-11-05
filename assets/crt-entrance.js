@@ -1,4 +1,5 @@
 import { CrtStateMachine, CRT_STATES, CRT_TIMINGS } from './crt-state-machine.js';
+import { mountBinaryOcean } from './binary-ocean.js';
 
 const stateClasses = Object.values(CRT_STATES).map(state => `state-${state.toLowerCase().replaceAll('_', '-')}`);
 const isTypingState = state => [CRT_STATES.MODEM_CONNECTING, CRT_STATES.MODEM_NEGOTIATING, CRT_STATES.IDENTITY_REVEAL, CRT_STATES.CONNECTION_ESTABLISHED].includes(state);
@@ -24,6 +25,9 @@ export function mountCrtEntrance() {
   const physicalPower = entrance.querySelector('#crt-physical-power');
   const screenPower = entrance.querySelector('#crt-screen-power');
   const stickyPower = entrance.querySelector('#crt-sticky-target');
+  const oceanCanvas = entrance.querySelector('#crt-ocean-canvas');
+  const oceanFallback = entrance.querySelector('#crt-ocean-fallback');
+  const oceanMotion = entrance.querySelector('#crt-ocean-motion');
   const skip = entrance.querySelector('#crt-skip');
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const reducedTimings = reducedMotion
@@ -40,8 +44,11 @@ export function mountCrtEntrance() {
     audio.load();
     return audio;
   };
-  const powerAudio = makeAudio('/assets/crt-power-on.mp3', 0.19);
-  const modemAudio = makeAudio('/assets/dialup-connect.mp3', 0.75);
+  const audioAsset = filename => new URL(`./assets/${filename}`, window.location.href).href;
+  const powerAudio = makeAudio(audioAsset('crt-power-on.mp3'), 0.19);
+  const modemAudio = makeAudio(audioAsset('dialup-connect.mp3'), 0.75);
+  let disposeOcean = () => {};
+  let oceanStopped = false;
 
   const cancelAll = () => {
     timerGeneration += 1;
@@ -74,6 +81,13 @@ export function mountCrtEntrance() {
     } catch {
       // Audio is an optional layer; the cue timeline continues without it.
     }
+  };
+
+  const stopIntroOcean = () => {
+    if (oceanStopped) return;
+    oceanStopped = true;
+    if (oceanMotion) oceanMotion.disabled = true;
+    disposeOcean();
   };
 
   function typeField(element, text, speed, done) {
@@ -110,6 +124,7 @@ export function mountCrtEntrance() {
   }
 
   function renderState(state) {
+    if (state !== CRT_STATES.OFF) stopIntroOcean();
     for (const className of stateClasses) entrance.classList.remove(className);
     entrance.classList.add(`state-${state.toLowerCase().replaceAll('_', '-')}`);
     entrance.dataset.state = state;
@@ -118,7 +133,7 @@ export function mountCrtEntrance() {
     stickyPower.disabled = state !== CRT_STATES.OFF;
 
     const messages = {
-      [CRT_STATES.OFF]: 'Display off. Press the Gateway power button to begin.',
+      [CRT_STATES.OFF]: 'Silent ambient display active. Press the Gateway power button to begin.',
       [CRT_STATES.POWERING_ON]: 'Power button pressed. CRT tube starting.',
       [CRT_STATES.TUBE_IGNITION]: 'CRT tube energizing.',
       [CRT_STATES.INITIALIZING]: 'Tube energizing. Raster stabilizing.',
@@ -167,6 +182,28 @@ export function mountCrtEntrance() {
   entrance.hidden = false;
   main?.setAttribute('inert', '');
   renderState(CRT_STATES.OFF);
+  try {
+    if (!oceanCanvas || !oceanFallback || !oceanMotion) throw new Error('CRT ocean canvas elements are missing');
+    disposeOcean = mountBinaryOcean({
+      canvas: oceanCanvas,
+      fallbackCanvas: oceanFallback,
+      state: liveStatus,
+      motionButton: oceanMotion,
+      interactive: false,
+      palette: 'crt',
+      densityScale: 0.82,
+      gridScale: 0.73,
+      pixelRatioCap: 1.15,
+      camera: { yaw: 0, pitch: 0.43, distance: 35 },
+      autoImpacts: false,
+      reducedMotionScale: 0.14,
+      pauseLabel: 'Pause animation',
+      resumeLabel: 'Resume animation'
+    });
+  } catch {
+    if (oceanMotion) oceanMotion.disabled = true;
+    liveStatus.textContent = 'Animated display unavailable in this browser. You can still start the Gateway.';
+  }
   physicalPower.focus();
 
   const onPhysicalPower = () => {
@@ -189,6 +226,7 @@ export function mountCrtEntrance() {
   };
   const dispose = () => {
     machine.dispose();
+    stopIntroOcean();
     stopAudio();
     physicalPower.removeEventListener('click', onPhysicalPower);
     screenPower.removeEventListener('click', onScreenPower);

@@ -6,6 +6,12 @@
 .crt-monitor>svg{display:block;width:100%;height:100%;overflow:visible}
 .crt-sticky-overlay{position:absolute;z-index:1;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
 .crt-screen{fill:#010302}
+.crt-ocean-viewport{width:100%;height:100%;overflow:hidden;background:#010302;opacity:1;transition:opacity .24s ease}
+.crt-ocean-viewport canvas{display:block;width:100%;height:100%;border:0}
+.crt-ocean-viewport canvas[hidden]{display:none!important}
+#crt-entrance.state-powering-on .crt-ocean-viewport{opacity:.72}
+#crt-entrance.state-tube-ignition .crt-ocean-viewport{opacity:.34}
+#crt-entrance.state-initializing .crt-ocean-viewport,#crt-entrance.state-modem-connecting .crt-ocean-viewport,#crt-entrance.state-modem-negotiating .crt-ocean-viewport,#crt-entrance.state-identity-reveal .crt-ocean-viewport,#crt-entrance.state-connection-established .crt-ocean-viewport,#crt-entrance.state-ready .crt-ocean-viewport{opacity:0}
 .crt-scanlines,.crt-static{opacity:0;pointer-events:none}
 .crt-ignition{fill:url(#crt-raster-gradient);opacity:0;transform-box:fill-box;transform-origin:center;filter:drop-shadow(0 0 9px rgba(0,255,102,.24))}
 .crt-ignition-bloom{fill:#61ff83;opacity:0;transform-box:fill-box;transform-origin:center;filter:blur(17px)}
@@ -36,7 +42,11 @@
 #crt-power-press-mark{opacity:0;transform-box:fill-box;transform-origin:center;pointer-events:none}
 #crt-entrance.state-powering-on #crt-power-press-mark{animation:crt-button-press .22s ease-out both}
 .crt-physical-power:disabled,.crt-screen-power:disabled,.crt-sticky-target:disabled{cursor:default}
-.crt-utility{display:flex;align-items:center;justify-content:center;margin-top:clamp(5px,1vh,12px)}
+.crt-utility{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:clamp(5px,1vh,12px)}
+.crt-motion-control{min-height:28px;padding:4px 7px;border:1px solid rgba(142,181,151,.24);border-radius:2px;background:rgba(4,9,5,.55);color:#84988a;font:10px/1.3 'Cascadia Code','SFMono-Regular',Consolas,monospace;letter-spacing:.025em;cursor:pointer;transition:color .15s ease,border-color .15s ease,opacity .15s ease}
+.crt-motion-control:hover{border-color:rgba(177,255,190,.52);color:#c5ffd0}
+.crt-motion-control:focus-visible{outline:2px solid #9affab;outline-offset:3px;color:#d3ffdb}
+.crt-motion-control:disabled{opacity:.58;cursor:default}
 .crt-skip-link{padding:5px 6px;border:0;background:transparent;color:#84988a;font:11px/1.3 'Cascadia Code','SFMono-Regular',Consolas,monospace;letter-spacing:.06em;text-decoration:none;opacity:.78;cursor:pointer;transition:color .15s ease,opacity .15s ease}
 .crt-skip-link:hover{color:#c5ffd0;opacity:1;text-decoration:underline;text-underline-offset:4px}
 .crt-skip-link:focus-visible{outline:2px solid #9affab;outline-offset:3px;color:#d3ffdb;opacity:1}
@@ -83,9 +93,9 @@
 @keyframes crt-page-reveal{0%{opacity:.28;filter:brightness(.82)}100%{opacity:1;filter:brightness(1)}}
 @media(hover:none){#crt-entrance.state-off .crt-screen-power{pointer-events:auto}#crt-entrance:not(.state-off) .crt-screen-power{pointer-events:none}}
 @media(hover:hover){.crt-screen-power{pointer-events:none}}
-@media(max-width:640px){.crt-stage{width:min(96vw,110svh)}.crt-physical-power{width:max(44px,8.5%);height:max(44px,8.5%)}.crt-utility{margin-top:5px}.crt-skip-link{font-size:10px}}
+@media(max-width:640px){.crt-stage{width:min(96vw,110svh)}.crt-physical-power{width:max(44px,8.5%);height:max(44px,8.5%)}.crt-utility{gap:9px;margin-top:5px}.crt-motion-control{font-size:9px;padding:4px 6px}.crt-skip-link{font-size:10px}}
 @media(max-height:460px) and (orientation:landscape){.crt-stage{width:min(91vw,110svh)}.crt-utility{margin-top:2px}.crt-skip-link{padding:2px 6px}}
-@media(prefers-reduced-motion:reduce){.crt-entrance *,.crt-entrance *:before,.crt-entrance *:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-delay:0ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.crt-entrance.state-powering-on .crt-sticky-overlay,.crt-entrance.state-tube-ignition .crt-sticky-overlay,.crt-entrance.state-initializing .crt-sticky-overlay{display:none!important}.crt-entrance.state-tube-ignition .crt-ignition,.crt-entrance.state-tube-ignition .crt-ignition-bloom,.crt-entrance.state-tube-ignition .crt-ignition-core{opacity:0!important}.crt-entrance.state-initializing .crt-static{opacity:0}.crt-entrance.state-initializing .crt-glyph{opacity:1}.crt-entrance.state-initializing .crt-glyph-stroke{stroke-dashoffset:0}.crt-entrance.state-initializing .crt-glyph-block{opacity:1}}
+@media(prefers-reduced-motion:reduce){.crt-ocean-viewport{opacity:.68}.crt-entrance *,.crt-entrance *:before,.crt-entrance *:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-delay:0ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.crt-entrance.state-powering-on .crt-sticky-overlay,.crt-entrance.state-tube-ignition .crt-sticky-overlay,.crt-entrance.state-initializing .crt-sticky-overlay{display:none!important}.crt-entrance.state-tube-ignition .crt-ignition,.crt-entrance.state-tube-ignition .crt-ignition-bloom,.crt-entrance.state-tube-ignition .crt-ignition-core{opacity:0!important}.crt-entrance.state-initializing .crt-static{opacity:0}.crt-entrance.state-initializing .crt-glyph{opacity:1}.crt-entrance.state-initializing .crt-glyph-stroke{stroke-dashoffset:0}.crt-entrance.state-initializing .crt-glyph-block{opacity:1}}
 
 /* Three-scale phosphor emission. The filter operates on the glyph's actual drawn paths and live text. */
 #crt-phosphor-wash{opacity:0;pointer-events:none}
