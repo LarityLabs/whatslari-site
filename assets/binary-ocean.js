@@ -5,8 +5,10 @@ if (!canvas || !fallbackCanvas) return () => {};
 const stage = canvas.closest('.observatory-stage');
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 const root = document.documentElement;
-let paused = reduced.matches;
-let motionOverride = false;
+// The ocean is ambient site content, so it moves on arrival. A reduced-motion
+// preference slows the waves and suppresses automatic ripples instead of
+// leaving the hero frozen; visitors can always pause it explicitly.
+let paused = false;
 let drawOnce = () => {};
 let schedule = () => {};
 let cancelFrame = () => {};
@@ -17,9 +19,10 @@ const cleanupTasks = [];
 const abort = new AbortController();
 const signal = abort.signal;
 const isLight = () => root.dataset.theme !== 'dark';
+const motionScale = () => reduced.matches ? 0.22 : 1;
 const updateStatus = () => {
-  if (state) state.textContent = paused ? (reduced.matches && !motionOverride ? 'Still ocean · reduced motion is enabled' : 'Ocean paused') : 'Binary ocean in motion · browser-rendered, not live runtime data';
-  if (motionButton) motionButton.textContent = paused ? (reduced.matches && !motionOverride ? 'Enable ocean motion' : 'Resume ocean') : 'Pause ocean';
+  if (state) state.textContent = paused ? 'Ocean paused' : reduced.matches ? 'Gentle binary ocean motion · reduced-motion preference' : 'Binary ocean in motion · browser-rendered, not live runtime data';
+  if (motionButton) motionButton.textContent = paused ? 'Resume ocean' : 'Pause ocean';
 };
 const renderFrame = now => {
   frameId = 0;
@@ -32,15 +35,12 @@ schedule = () => {
 cancelFrame = () => { if (frameId) cancelAnimationFrame(frameId); frameId = 0; };
 const setPaused = value => { paused = value; updateStatus(); cancelFrame(); schedule(); };
 motionButton?.addEventListener('click', () => {
-  if (reduced.matches && paused && !motionOverride) { motionOverride = true; setPaused(false); }
-  else setPaused(!paused);
+  setPaused(!paused);
 }, {signal});
 motionButton && (motionButton.disabled = false);
 const themeObserver = new MutationObserver(() => applyCurrentTheme());
 themeObserver.observe(root, {attributes:true, attributeFilter:['data-theme']});
-reduced.addEventListener?.('change', event => {
-  if (!motionOverride) setPaused(event.matches);
-}, {signal});
+reduced.addEventListener?.('change', () => { updateStatus(); schedule(); }, {signal});
 document.addEventListener('visibilitychange', () => { if (document.hidden) cancelFrame(); else schedule(); }, {signal});
 const viewObserver = new IntersectionObserver(([entry]) => { inView = entry.isIntersecting; if (inView) schedule(); else cancelFrame(); }, {threshold:.01});
 viewObserver.observe(stage || canvas);
@@ -56,7 +56,7 @@ function resize(){const r=target.getBoundingClientRect(),scale=Math.min(devicePi
 const resizeObserver=new ResizeObserver(resize);resizeObserver.observe(stage || target);cleanupTasks.push(()=>resizeObserver.disconnect());resize();
 function ripple(x,z,power=1.0){rings.push({x,z,born:t,power});if(rings.length>9)rings.shift();}
 function surface(x,z){let h=1.5*Math.sin(x*.24+z*.17-t*.68)+.9*Math.sin(x*.12-z*.31+t*.52)+.55*Math.sin(x*.42+z*.22-t*.93)+.28*Math.sin(x*.79-z*.39+t*.88);for(const r of rings){let dt=t-r.born;if(dt<0||dt>9)continue;let dist=Math.hypot(x-r.x,z-r.z);let front=dist-dt*4.2;h+=r.power*1.8*Math.sin(front*1.5)*Math.exp(-Math.abs(front)*.48)*Math.exp(-dt*.24);}return h;}
-drawOnce=now=>{let dt=Math.min((now-last)/1000,.05);last=now;if(!paused){t+=dt;if(t-lastDrop>3.9){lastDrop=t;ripple(Math.sin(t*.8)*10,Math.cos(t*.57)*8,.5);}}
+drawOnce=now=>{let dt=Math.min((now-last)/1000,.05);last=now;if(!paused){const motionDt=dt*motionScale();t+=motionDt;if(!reduced.matches&&t-lastDrop>3.9){lastDrop=t;ripple(Math.sin(t*.8)*10,Math.cos(t*.57)*8,.5);}}
 const w=target.width,h=target.height;ctx.fillStyle=light?'#f4f7f3':'#050c09';ctx.fillRect(0,0,w,h);ctx.textAlign='center';ctx.textBaseline='middle';const unit=Math.min(w/80,h/42)*zoom,angle=yaw;
 const cols=Math.max(54,Math.min(125,Math.round(w/10))),rows=Math.max(34,Math.min(74,Math.round(h/9)));
 for(let j=0;j<rows;j++){const z=-26+(j/(rows-1))*52,fade=Math.max(.1,Math.min(1,(z+28)/34)),dep=.78+(z+26)/52*.64;for(let i=0;i<cols;i++){
@@ -163,7 +163,7 @@ canvas.addEventListener('wheel',e=>{if(document.activeElement!==canvas)return;e.
 canvas.addEventListener('keydown',e=>{if(e.key===' '){e.preventDefault();setPaused(!paused);}else if(e.key.toLowerCase()==='r'){yaw=0;pitch=.37;dist=38;schedule();}},{signal});
 stage?.querySelector('[data-ocean-zoom-in]')?.addEventListener('click',()=>{dist=Math.max(23,dist-2);schedule();},{signal});
 stage?.querySelector('[data-ocean-zoom-out]')?.addEventListener('click',()=>{dist=Math.min(70,dist+2);schedule();},{signal});
-drawOnce=now=>{let dt=Math.min((now-last)/1000,.05);last=now;if(!paused){simTime+=dt;acc+=dt;while(acc>=1/60){step();acc-=1/60;}autoRipple+=dt;if(autoRipple>3.8){autoRipple=0;impulse(.20+(.5+.5*Math.sin(simTime*.39))*.6,.32+(.5+.5*Math.sin(simTime*.63))*.35,.72);}}gl.useProgram(prog);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,phys);gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,W,H,gl.RED,gl.FLOAT,current);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,atlas);
+drawOnce=now=>{let dt=Math.min((now-last)/1000,.05);last=now;if(!paused){const motionDt=dt*motionScale();simTime+=motionDt;acc+=motionDt;while(acc>=1/60){step();acc-=1/60;}if(!reduced.matches){autoRipple+=motionDt;if(autoRipple>3.8){autoRipple=0;impulse(.20+(.5+.5*Math.sin(simTime*.39))*.6,.32+(.5+.5*Math.sin(simTime*.63))*.35,.72);}}}gl.useProgram(prog);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,phys);gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,W,H,gl.RED,gl.FLOAT,current);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,atlas);
 let eye=[Math.sin(yaw)*dist*Math.cos(pitch),Math.sin(pitch)*dist,Math.cos(yaw)*dist*Math.cos(pitch)];gl.uniformMatrix4fv(U.uView,false,lookAt(eye,[0,-.7,0]));gl.uniform1f(U.uTime,simTime);
 gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.disable(gl.DEPTH_TEST);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.bindVertexArray(vao);gl.drawArrays(gl.POINTS,0,224*144);
 };

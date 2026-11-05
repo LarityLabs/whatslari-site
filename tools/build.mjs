@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { validateSnapshot, scanPublicText } from './data-schema.mjs';
 
@@ -8,6 +9,11 @@ const out = path.join(root, 'dist');
 const config = JSON.parse(await fs.readFile(path.join(root, 'site.config.json'), 'utf8'));
 const rootThemeColor = '#f3f2ec';
 const snapshot = JSON.parse(await fs.readFile(path.join(root, 'data/approved/snapshot.json'), 'utf8'));
+const assetVersion = value => crypto.createHash('sha256').update(value).digest('hex').slice(0, 12);
+const binaryOceanSource = await fs.readFile(path.join(root, 'assets/binary-ocean.js'), 'utf8');
+const liveObservatorySource = await fs.readFile(path.join(root, 'assets/live-observatory.js'), 'utf8');
+const binaryOceanVersion = assetVersion(binaryOceanSource);
+const liveObservatoryVersion = assetVersion(liveObservatorySource + '\n' + binaryOceanVersion);
 const issues = [...validateSnapshot(snapshot), ...scanPublicText(snapshot)];
 if (issues.length) throw new Error(`Public data validation failed:\n- ${issues.join('\n- ')}`);
 await fs.rm(out, { recursive: true, force: true });
@@ -168,7 +174,7 @@ async function shell(route, body) {
   const introGateStyles = `<style>html[data-crt-pending="true"] body>.skip-link,html[data-crt-pending="true"] body>.site-header,html[data-crt-pending="true"] body>#mobile-nav,html[data-crt-pending="true"] body>#main,html[data-crt-pending="true"] body>.site-footer{visibility:hidden!important}html[data-crt-pending="true"] #crt-entrance[hidden]{display:grid!important}</style>`;
   const discussionBacklink = body.includes('data-giscus-section') ? `<meta name="giscus:backlink" content="${config.domain}${route}">` : '';
   const liveAssets = route === '/live/' ? '<link rel="stylesheet" href="/assets/live-observatory.css">' : '';
-  const liveScript = route === '/live/' ? '<script type="module" src="/assets/live-observatory.js"></script>' : '';
+  const liveScript = route === '/live/' ? '<script type="module" src="/assets/live-observatory.js?v=' + liveObservatoryVersion + '"></script>' : '';
   return `<!doctype html><html lang="en" data-theme="light" data-theme-preference="system"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><script>${themeBootstrap}</script><script>${introBootstrap}</script><title>${escape(title)}</title><meta name="description" content="${escape(description)}"><meta name="application-name" content="${escape(config.brandName)}"><meta name="author" content="Larity Labs"><meta name="robots" content="index,follow"><link rel="canonical" href="${config.domain}${route}">${discussionBacklink}<meta property="og:type" content="${route.startsWith('/research/') ? 'article' : 'website'}"><meta property="og:site_name" content="${escape(config.siteName)}"><meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(description)}"><meta property="og:url" content="${config.domain}${route}"><meta property="og:image" content="${config.domain}${image}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="${escape(imageAlt)}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escape(title)}"><meta name="twitter:description" content="${escape(description)}"><meta name="twitter:image" content="${config.domain}${image}"><meta name="twitter:image:alt" content="${escape(imageAlt)}"><meta name="theme-color" content="${rootThemeColor}"><link rel="icon" href="/assets/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/assets/lari-icon-32.png"><link rel="icon" type="image/png" sizes="16x16" href="/assets/lari-icon-16.png"><link rel="apple-touch-icon" sizes="180x180" href="/assets/lari-icon-180.png"><link rel="manifest" href="/assets/site.webmanifest"><link rel="stylesheet" href="/assets/brand-tokens.css"><link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/crt-entrance.css">${liveAssets}${introGateStyles}<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@graph': graph })}</script></head><body><a class="skip-link" href="#main">Skip to content</a><header class="site-header"><a class="brand" href="/" aria-label="LARI home"><span class="brand-logo-switch"><img class="logo-light" src="/assets/lari-primary-light.svg" alt="LARI — ${escape(config.brandExpansion)}" width="165" height="52"><img class="logo-dark" src="/assets/lari-primary-dark.svg" alt="" aria-hidden="true" width="165" height="52"></span></a><nav aria-label="Main navigation">${links}<a class="nav-about" href="/about/">About</a></nav><label class="theme-control"><span>Theme</span><select id="theme-choice" aria-label="Color theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label><button class="menu-toggle" aria-expanded="false" aria-controls="mobile-nav">Menu</button></header><nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation" hidden>${links}<a href="/live/capabilities/">Capabilities</a><a href="/live/timeline/">Development</a><a href="/about/">About</a></nav>${entrance}<main id="main" tabindex="-1">${body}</main><footer class="site-footer"><a class="brand brand-footer" href="/" aria-label="LARI home"><img class="brand-lockup" src="/assets/lari-primary-dark.svg" alt="LARI — ${escape(config.brandExpansion)}" width="150" height="47"></a><p>${config.tagline}</p><div class="footer-links"><a href="/live/">Lari Live</a><a href="/docs/">Evidence guide</a><a href="/community/">Community</a><a href="/about/">About</a><a href="/contact/">Contact</a><a href="mailto:gorygrey@whatslari.com">gorygrey@whatslari.com</a><a href="tel:+18143152009">(814) 315-2009</a><a href="/?intro=replay">Replay intro</a></div><small class="copyright">© ${new Date().getUTCFullYear()} Larity Labs · Static research site</small></footer><script type="module" src="/assets/site.js"></script>${liveScript}</body></html>`;
 }
 
@@ -202,6 +208,12 @@ for (const [oldRoute, newRoute] of aliases) {
   await fs.writeFile(path.join(dir, 'index.html'), `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex,follow"><link rel="canonical" href="${destination}"><meta http-equiv="refresh" content="0;url=${newRoute}"><title>Page moved: ${newRoute} | LARI</title></head><body><main><h1>This page has moved</h1><p><a href="${newRoute}">Continue to ${newRoute}</a></p></main><script>location.replace(${JSON.stringify(newRoute)})</script></body></html>`, 'utf8');
 }
 await fs.cp(path.join(root, 'assets'), path.join(out, 'assets'), { recursive: true });
+const versionedLiveObservatory = liveObservatorySource.replace(
+  "from './binary-ocean.js';",
+  "from './binary-ocean.js?v=" + binaryOceanVersion + "';"
+);
+if (versionedLiveObservatory === liveObservatorySource) throw new Error('Lari Live binary ocean import changed; update the versioned asset build rule');
+await fs.writeFile(path.join(out, 'assets/live-observatory.js'), versionedLiveObservatory, 'utf8');
 const publishedExperimentIds = new Set(snapshot.experiments.map(row => row.id));
 const socialCardsDir = path.join(out, 'assets', 'social-cards');
 for (const file of await fs.readdir(socialCardsDir).catch(() => [])) {
