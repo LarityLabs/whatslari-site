@@ -38,6 +38,8 @@ export function validateSnapshot(data) {
       if (row.limitations !== undefined && typeof row.limitations !== 'string') errors.push(`${key} record ${row.id || '(unknown)'} has invalid limitations`);
       if (row.result !== undefined && typeof row.result !== 'string') errors.push(`${key} record ${row.id || '(unknown)'} has invalid result`);
       if (row.environment !== undefined && typeof row.environment !== 'string') errors.push(`${key} record ${row.id || '(unknown)'} has invalid environment`);
+      if (row.revision !== undefined && (!Number.isSafeInteger(row.revision) || row.revision < 1)) errors.push(`${key} record ${row.id || '(unknown)'} has invalid revision; use a positive integer`);
+      if (row.researchAreas !== undefined && (!Array.isArray(row.researchAreas) || row.researchAreas.some(area => typeof area !== 'string' || !area.trim() || area.includes('|')) || new Set(row.researchAreas).size !== row.researchAreas.length)) errors.push(`${key} record ${row.id || '(unknown)'} has invalid researchAreas`);
       if (row.measurements !== undefined && (!row.measurements || typeof row.measurements !== 'object' || Array.isArray(row.measurements) || Object.entries(row.measurements).some(([name, value]) => !/^[A-Za-z][A-Za-z0-9]*$/.test(name) || !['string', 'number', 'boolean'].includes(typeof value) || (typeof value === 'number' && !Number.isFinite(value))))) errors.push(`${key} record ${row.id || '(unknown)'} has invalid measurements`);
       if (!['hypothesis', 'experimental', 'demonstrated', 'independently-reproduced', 'production-qualified', 'negative-result'].includes(row.status)) errors.push(`${key} record ${row.id || '(unknown)'} has invalid status`);
       if (!['unverified', 'verified', 'independently-reproduced', 'not-applicable'].includes(row.verificationStatus)) errors.push(`${key} record ${row.id || '(unknown)'} has invalid verificationStatus`);
@@ -53,6 +55,12 @@ export function validateSnapshot(data) {
     for (const relatedId of row?.relatedExperimentIds || []) if (!idSet.has(relatedId)) errors.push(`record ${row.id} relatedExperimentIds points to unknown record ${relatedId}`);
     if (row?.architectureComponent && !['request','kernel','state','execution','persistence','governance'].includes(row.architectureComponent)) errors.push(`record ${row.id} has an unknown architectureComponent`);
     if (row?.sourceFingerprint && !/^[a-f0-9]{64}$/i.test(row.sourceFingerprint)) errors.push(`record ${row.id} has an invalid sourceFingerprint`);
+  }
+  const experimentIds = new Set((data?.experiments || []).map(row => row?.id).filter(Boolean));
+  for (const milestone of data?.milestones || []) {
+    for (const experimentId of milestone?.relatedExperimentIds || []) {
+      if (!experimentIds.has(experimentId)) errors.push(`milestone ${milestone.id} research cross-link must target an approved experiment: ${experimentId}`);
+    }
   }
   return errors;
 }

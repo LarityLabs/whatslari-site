@@ -158,7 +158,7 @@ if (explorer) {
     for (const record of records) {
       const matches = (selectedStatus === 'all' || record.dataset.status === selectedStatus)
         && (!query || record.dataset.search.includes(query))
-        && (!area || area.value === 'all' || record.dataset.area === area.value)
+        && (!area || area.value === 'all' || (record.dataset.areas || record.dataset.area || '').split('|').includes(area.value))
         && (!component || component.value === 'all' || record.dataset.component === component.value)
         && (!outcome || outcome.value === 'all' || record.dataset.outcome === outcome.value)
         && (!lifecycle || lifecycle.value === 'all' || record.dataset.lifecycle === lifecycle.value)
@@ -171,6 +171,133 @@ if (explorer) {
   };
   search?.addEventListener('input', update);
   for (const control of [status, area, component, outcome, lifecycle, from, through]) control?.addEventListener('change', update);
+}
+
+const activity = document.querySelector('[data-live-activity]');
+if (activity) {
+  if (!document.querySelector('link[href="/assets/activity.css"]')) {
+    const stylesheet = document.createElement('link');
+    stylesheet.rel = 'stylesheet';
+    stylesheet.href = '/assets/activity.css';
+    document.head.append(stylesheet);
+  }
+  const activityList = activity.querySelector('[data-activity-list]');
+  const activityState = activity.querySelector('[data-activity-state]');
+  const activityArea = activity.querySelector('[data-activity-area]');
+  const refreshButton = activity.querySelector('[data-activity-refresh]');
+  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+  let currentSnapshotId = '';
+  let currentDigest = '';
+  let records = [...activityList.querySelectorAll('[data-activity-card]')].map(card => ({ id: card.dataset.sourceId }));
+  currentSnapshotId = activity.dataset.snapshotId || '';
+  currentDigest = activity.dataset.contentDigest || '';
+  const safeText = value => typeof value === 'string' ? value : '';
+  const makeActivityCard = row => {
+    const li = document.createElement('li');
+    li.className = 'activity-card';
+    li.dataset.activityCard = '';
+    li.dataset.areas = [...new Set([...(Array.isArray(row.researchAreas) ? row.researchAreas : []), row.researchArea].filter(Boolean))].join('|');
+    li.dataset.sourceId = safeText(row.id);
+    const eyebrow = document.createElement('p');
+    eyebrow.className = 'eyebrow';
+    eyebrow.textContent = `${row.activityKind} · ${safeText(row.status)} · ${safeText(row.verificationStatus)}`;
+    li.append(eyebrow);
+    const title = document.createElement('h3');
+    const link = document.createElement('a');
+    link.href = row.activityHref;
+    link.textContent = `${safeText(row.title)} ↗`;
+    title.append(link);
+    li.append(title);
+    const summary = document.createElement('p');
+    summary.textContent = safeText(row.summary);
+    li.append(summary);
+    const detail = document.createElement('details');
+    const summaryToggle = document.createElement('summary');
+    summaryToggle.textContent = 'Record details';
+    detail.append(summaryToggle);
+    if (row.result) { const observed = document.createElement('p'); observed.textContent = `Observed: ${row.result}`; detail.append(observed); }
+    if (row.outcome) { const outcome = document.createElement('p'); outcome.textContent = `Outcome: ${row.outcome}`; detail.append(outcome); }
+    const limitations = document.createElement('p');
+    limitations.textContent = `Limitations: ${safeText(row.limitations) || 'Not stated in this approved record.'}`;
+    detail.append(limitations);
+    const dates = document.createElement('small');
+    dates.textContent = `Measured ${safeText(row.measuredAt) || 'date unavailable'} · Published ${safeText(row.publishedAt) || 'date unavailable'}`;
+    detail.append(dates);
+    li.append(detail);
+    const published = document.createElement('time');
+    published.dateTime = safeText(row.publishedAt);
+    published.textContent = `Published ${row.publishedLabel}`;
+    li.append(published);
+    return li;
+  };
+  const renderActivity = (snapshot, animateIds = new Set()) => {
+    const items = [
+      ...snapshot.experiments.map(row => ({ ...row, activityKind: 'Research record published', activityHref: `/live/experiments/${encodeURIComponent(row.id)}/` })),
+    ].sort((a,b) => String(b.publishedAt || '').localeCompare(String(a.publishedAt || '')) || String(b.measuredAt || '').localeCompare(String(a.measuredAt || ''))).slice(0, 12);
+    records = items;
+    const fragment = document.createDocumentFragment();
+    for (const row of items) {
+      const card = makeActivityCard({ ...row, publishedLabel: row.publishedAt ? new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(row.publishedAt)) : 'date unavailable' });
+      if (animateIds.has(row.id) && !reducedMotion?.matches) card.classList.add('activity-new');
+      fragment.append(card);
+    }
+    activityList.replaceChildren(fragment);
+    if (items.length === 0) {
+      const empty = document.createElement('li');
+      empty.className = 'empty-state';
+      empty.textContent = 'No approved research activity is available in this snapshot.';
+      activityList.append(empty);
+    }
+    if (activityArea) {
+      const selected = activityArea.value;
+      const areas = [...new Set(items.flatMap(item => [...(Array.isArray(item.researchAreas) ? item.researchAreas : []), item.researchArea].filter(Boolean)))].sort();
+      activityArea.replaceChildren(new Option('All areas', 'all'), ...areas.map(areaName => new Option(areaName, areaName)));
+      activityArea.value = areas.includes(selected) ? selected : 'all';
+      for (const card of activityList.querySelectorAll('[data-activity-card]')) card.hidden = activityArea.value !== 'all' && !card.dataset.areas.split('|').includes(activityArea.value);
+    }
+  };
+  const verifySnapshot = async (snapshot, manifest) => {
+    if (!snapshot || snapshot.snapshotId !== manifest.snapshotId || snapshot.contentDigest !== manifest.contentDigest
+      || !Array.isArray(snapshot.experiments) || !Array.isArray(snapshot.milestones)) throw new Error('Snapshot identity does not match its manifest.');
+    if (!window.crypto?.subtle) throw new Error('This browser cannot verify the approved snapshot digest.');
+    const payload = { ...snapshot, contentDigest: null };
+    const digest = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(payload))))].map(byte => byte.toString(16).padStart(2, '0')).join('');
+    if (digest !== snapshot.contentDigest) throw new Error('Approved snapshot digest verification failed.');
+  };
+  const checkForActivity = async () => {
+    if (activityState) activityState.textContent = 'Checking the approved snapshot…';
+    try {
+      const manifestResponse = await fetch(`${activity.dataset.manifest}?_=${Date.now()}`, { cache: 'no-store' });
+      if (!manifestResponse.ok) throw new Error(`Manifest request returned ${manifestResponse.status}.`);
+      const manifest = await manifestResponse.json();
+      if (manifest.schemaVersion !== 1 || !manifest.snapshotUrl || !manifest.snapshotId || !manifest.contentDigest) throw new Error('The public manifest is incomplete.');
+      if (manifest.snapshotId === currentSnapshotId && manifest.contentDigest === currentDigest) {
+        if (activityState) activityState.textContent = `No new approved records. Snapshot published ${manifest.publishedAt ? new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' }).format(new Date(manifest.publishedAt)) : 'at an unknown time'} UTC.`;
+        return;
+      }
+      const response = await fetch(`${manifest.snapshotUrl}?_=${Date.now()}`, { cache: 'no-store' });
+      if (!response.ok) throw new Error(`Snapshot request returned ${response.status}.`);
+      const nextSnapshot = await response.json();
+      await verifySnapshot(nextSnapshot, manifest);
+      const priorIds = new Set(records.map(row => row.id));
+      const newIds = new Set([...nextSnapshot.experiments, ...nextSnapshot.milestones].filter(row => !priorIds.has(row.id)).map(row => row.id));
+      currentSnapshotId = manifest.snapshotId;
+      currentDigest = manifest.contentDigest;
+      renderActivity(nextSnapshot, newIds);
+      activity.closest('[data-live-observatory]')?.dispatchEvent(new CustomEvent('live-snapshot-updated', { detail: nextSnapshot }));
+      if (activityState) activityState.textContent = `Updated from approved snapshot ${manifest.snapshotId}. Published ${manifest.publishedAt ? new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' }).format(new Date(manifest.publishedAt)) : 'at an unknown time'} UTC.`;
+    } catch (error) {
+      if (activityState) activityState.textContent = `Showing the last built approved snapshot; update check unavailable (${error.message}).`;
+    }
+  };
+  activityArea?.addEventListener('change', () => {
+    for (const card of activityList.querySelectorAll('[data-activity-card]')) card.hidden = activityArea.value !== 'all' && !card.dataset.areas.split('|').includes(activityArea.value);
+  });
+  refreshButton?.addEventListener('click', checkForActivity);
+  window.addEventListener('online', checkForActivity);
+  window.addEventListener('offline', () => { if (activityState) activityState.textContent = 'Offline. Showing the last built approved snapshot.'; });
+  checkForActivity();
+  window.setInterval(checkForActivity, 60_000);
 }
 
 const requestForm = document.querySelector('[data-request-form]');

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const reportPath = process.env.LARI_REPORT_PATH;
 if (!reportPath) throw new Error('Set LARI_REPORT_PATH to the designated local source report; private source paths are not embedded in this public repository.');
-const privateDir = path.join(root, 'private-review');
+const privateDir = path.resolve(process.env.LARI_PRIVATE_REVIEW_DIR || path.join(root, 'private-review'));
 const outputPath = path.resolve(process.env.LARI_SCAN_OUTPUT_PATH || path.join(privateDir, 'research-scan.json'));
 if (!outputPath.startsWith(`${privateDir}${path.sep}`)) throw new Error('Scan output must stay inside the ignored private-review directory.');
 const report = await fs.readFile(reportPath, 'utf8');
@@ -162,4 +162,16 @@ try {
 const result = { schemaVersion: 1, status: 'private-review-only', scannedAt: new Date().toISOString(), source: { path: reportPath, generatedAt, sourceFingerprint: fingerprint, reportSha256 }, headingsScanned: headings.length, meaningfulSectionsScanned: entries.length, duplicatesDetected: entries.reduce((sum, row) => sum + row.duplicateSectionIds.length, 0), curatedProposal, editorialRelease, unresolvedReferences: entries.flatMap(row => row.references.filter(ref => !ref.exists).map(ref => ({ scanId: row.scanId, ref: ref.ref, reason: ref.reason }))), entries };
 await fs.mkdir(path.dirname(outputPath), { recursive: true });
 await fs.writeFile(outputPath, `${JSON.stringify(result, null, 2)}\n`);
+const ledgerPath = path.join(privateDir, 'research-ledger.jsonl');
+const ledger = (await fs.readFile(ledgerPath, 'utf8').catch(() => '')).split(/\r?\n/).filter(Boolean).map(line => { try { return JSON.parse(line); } catch { return null; } }).filter(Boolean);
+const seen = new Set(ledger.map(item => `${item.scanId}|${item.sectionSha256}|${item.evidenceDigest}`));
+const additions = [];
+for (const entry of entries) {
+  const key = `${entry.scanId}|${entry.sectionSha256}|${entry.evidenceDigest}`;
+  if (seen.has(key)) continue;
+  additions.push({ schemaVersion: 1, kind: 'private-research-record', recordedAt: result.scannedAt, scanId: entry.scanId, title: entry.title, date: entry.date, sourceReportGeneratedAt: result.source.generatedAt, sourceReportSha256: result.source.reportSha256, sourceFingerprint: result.source.sourceFingerprint, reportStatus: entry.reportStatus, reportEvidenceClass: entry.reportEvidenceClass, sectionSha256: entry.sectionSha256, evidenceDigest: entry.evidenceDigest, referenceCount: entry.referenceCount, references: entry.references, reportExcerpt: entry.excerpt, publicationStatus: 'candidate-only; owner review required' });
+  seen.add(key);
+}
+if (additions.length) await fs.appendFile(ledgerPath, `${additions.map(row => JSON.stringify(row)).join('\n')}\n`, 'utf8');
+await import('./generate-paper-candidates.mjs');
 process.stdout.write(`Private scan complete: ${headings.length} headings; ${entries.length} substantive sections; ${result.duplicatesDetected} duplicate sections; ${result.unresolvedReferences.length} unresolved local references.\nReport fingerprint: ${fingerprint || 'not present'}\nReport SHA-256: ${reportSha256}\nCandidates remain private and unapproved: ${outputPath}\n`);

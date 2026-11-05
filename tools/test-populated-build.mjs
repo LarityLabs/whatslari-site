@@ -67,6 +67,16 @@ try {
   const timeline = await fs.readFile(path.join(dist,'live/timeline/index.html'),'utf8');
   assert.match(timeline,/data-filter-from/);
   assert.match(timeline,/2026/);
+  assert.match(timeline,/Evidence details/,'timeline entries expose expandable evidence context');
+  const live = await fs.readFile(path.join(dist,'live/index.html'),'utf8');
+  assert.match(live,/TEST ONLY — Fixture detail one/,'fixture-backed experiment appears in the activity feed only in the isolated fixture build');
+  assert.match(live,/data-content-digest="[a-f0-9]{64}"/);
+  const manifest = JSON.parse(await fs.readFile(path.join(dist,'data/manifest.json'),'utf8'));
+  assert.equal(manifest.snapshotId,snapshot.snapshotId);
+  assert.equal(manifest.contentDigest,snapshot.contentDigest);
+  assert.equal(manifest.recordCounts.experiments,2);
+  assert.ok(manifest.recordCounts.milestones === 1);
+  assert.ok(!live.includes('private-review/'),'activity preview does not disclose private review paths');
   const sitemap = await fs.readFile(path.join(dist,'sitemap.xml'),'utf8');
   assert.match(sitemap,/<loc>https:\/\/whatslari\.com\/live\/experiments\/fixture-one\/\/??<\/loc>|<loc>https:\/\/whatslari\.com\/live\/experiments\/fixture-one\/<\/loc>/);
   const generated = await fs.readdir(dist,{recursive:true});

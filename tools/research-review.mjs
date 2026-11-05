@@ -67,6 +67,10 @@ try {
       const sourceRecordId = await prompt('Public provenance label (no paths or internal IDs)', draft.sourceRecordId || '');
       const researchQuestion = await prompt('Research question (blank if not known)', draft.researchQuestion || '');
       const researchArea = await prompt('Research area (blank if not classified)', draft.researchArea || '');
+      const researchAreas = (await prompt('Additional research areas, comma-separated (blank if none)', (draft.researchAreas || []).join(', '))).split(',').map(value => value.trim()).filter(Boolean);
+      const revisionInput = await prompt('Record revision (positive integer)', String(draft.revision || 1));
+      const revision = Number(revisionInput);
+      if (!Number.isSafeInteger(revision) || revision < 1) throw new Error('Record revision must be a positive integer.');
       const architectureComponent = await prompt('Architecture component (request/kernel/state/execution/persistence/governance; blank if no proven link)', draft.architectureComponent || '');
       const whyItMatters = await prompt('Why this question matters (blank if unknown)', draft.whyItMatters || '');
       const baseline = await prompt('Initial baseline (blank if unavailable)', draft.baseline || '');
@@ -98,7 +102,7 @@ try {
       if (architectureComponent && !['request','kernel','state','execution','persistence','governance'].includes(architectureComponent)) throw new Error('Choose an existing architecture component or leave blank.');
       const id = await prompt('Stable public ID', idFallback);
       const record = {
-        id, collection, title, summary, researchQuestion:researchQuestion || null, researchArea:researchArea || null, architectureComponent:architectureComponent || null,
+        id, revision, collection, title, summary, researchQuestion:researchQuestion || null, researchArea:researchArea || null, researchAreas, architectureComponent:architectureComponent || null,
         whyItMatters:whyItMatters || null, status, verificationStatus, lifecycleStatus,
         sourceRecordId, measuredAt: entry.date || 'unknown', evaluationMethod,
         baseline:baseline || null, candidateMethod:candidateMethod || null, comparisonConditions:comparisonConditions || null,

@@ -7,12 +7,14 @@
   "scripts": {
     "build": "node tools/build.mjs",
     "check": "node tools/check.mjs",
-    "test": "node tools/test-data-schema.mjs && node tools/test-research-pipeline.mjs && node tools/test-populated-build.mjs && node tools/test-crt-state-machine.mjs && node tools/build.mjs && node tools/test-crt-integration.mjs && node tools/test-site-features.mjs",
+    "test": "node tools/test-data-schema.mjs && node tools/test-research-pipeline.mjs && node tools/test-rollback-approved-snapshot.mjs && node tools/test-populated-build.mjs && node tools/test-crt-state-machine.mjs && node tools/build.mjs && node tools/test-crt-integration.mjs && node tools/test-site-features.mjs",
     "social:cards": "python tools/generate-social-cards.py",
     "export:approved": "node tools/export-approved-data.mjs",
     "research:scan": "node tools/research-scan.mjs",
+    "research:drafts": "node tools/generate-paper-candidates.mjs",
     "research:review": "node tools/research-review.mjs",
     "research:validate": "node tools/validate-approved-data.mjs",
-    "research:export": "node tools/export-approved-data.mjs"
+    "research:export": "node tools/export-approved-data.mjs",
+    "research:rollback": "node tools/rollback-approved-snapshot.mjs"
   }
 }
