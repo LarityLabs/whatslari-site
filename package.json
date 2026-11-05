@@ -11,10 +11,14 @@
     "social:cards": "python tools/generate-social-cards.py",
     "export:approved": "node tools/export-approved-data.mjs",
     "research:scan": "node tools/research-scan.mjs",
+    "research:index": "node tools/research-index.mjs",
+    "research:rebind": "node tools/research-rebind.mjs",
+    "research:test-lineage": "node tools/test-publication-lineage.mjs",
     "research:drafts": "node tools/generate-paper-candidates.mjs",
     "research:review": "node tools/research-review.mjs",
     "research:validate": "node tools/validate-approved-data.mjs",
     "research:export": "node tools/export-approved-data.mjs",
-    "research:rollback": "node tools/rollback-approved-snapshot.mjs"
+    "research:rollback": "node tools/rollback-approved-snapshot.mjs",
+    "research:authorize-batch": "node tools/research-authorize-batch.mjs"
   }
 }

@@ -1,15 +1,15 @@
 {
   "schemaVersion": 2,
-  "snapshotId": "snapshot-20261031200340",
+  "snapshotId": "snapshot-20261105150054",
   "status": "approved",
-  "publishedAt": "2026-10-31T20:03:40.716Z",
-  "generatedAt": "2026-10-31T20:03:40.716Z",
-  "entryCount": 15,
+  "publishedAt": "2026-11-05T15:00:54.782Z",
+  "generatedAt": "2026-11-05T15:00:54.784Z",
+  "entryCount": 14,
   "sourceReport": {
-    "version": "Owner-reviewed LARI research source snapshot · 2026-10-31"
+    "version": "Owner-reviewed LARI research source snapshot · 2026-11-04T19:38:58.695Z"
   },
-  "previousSnapshotId": "snapshot-20261031200057",
-  "contentDigest": "bf7f46fed81128ba6d67e609ef3d38051662b94daa02866d6f7f59b7d94a5853",
+  "previousSnapshotId": "snapshot-20261031200340",
+  "contentDigest": "70ee4ede576829826c19b1e5e67b395560e566df098af9ea232bb62de46577a5",
   "experiments": [
     {
       "id": "blank-workspace-javascript-construction",
@@ -61,7 +61,7 @@
       "publicProvenance": "Owner-reviewed summary of the dated blank-workspace candidate receipt and linked regression evidence; private source files and hashes are withheld.",
       "reportVersion": "LARI Full Report 2026-10-31T11:42:43.574Z",
       "sourceFingerprint": null,
-      "publishedAt": "2026-10-31T20:03:40.716Z",
+      "publishedAt": "2026-11-05T15:00:54.782Z",
       "lastReviewedAt": "2026-10-31T20:03:34.645Z"
     },
     {
@@ -113,7 +113,7 @@
       "publicProvenance": "Owner-reviewed summary of dated acquisition and current-runtime diagnostic receipts; source paths, hashes, and private artifacts are withheld.",
       "reportVersion": "LARI Full Report 2026-10-31T11:42:43.574Z",
       "sourceFingerprint": null,
-      "publishedAt": "2026-10-31T20:03:40.716Z",
+      "publishedAt": "2026-11-05T15:00:54.782Z",
       "lastReviewedAt": "2026-10-31T20:03:34.651Z"
     },
     {
@@ -166,7 +166,7 @@
       "publicProvenance": "Owner-reviewed summary of the frozen acceptance, refinement, and cold-verification receipts; private candidate records and hashes are withheld.",
       "reportVersion": "LARI Full Report 2026-10-31T11:42:43.574Z",
       "sourceFingerprint": null,
-      "publishedAt": "2026-10-31T20:03:40.716Z",
+      "publishedAt": "2026-11-05T15:00:54.782Z",
       "lastReviewedAt": "2026-10-31T20:03:34.653Z"
     },
     {
@@ -204,19 +204,12 @@
       },
       "measurementConditions": "All values are reported in the source snapshot. Independent per-lane current-lineage verification was not completed for this release.",
       "limitations": "Five named bounded repair lanes only. The figures and lineage are report-derived and not a fresh rerun. No arbitrary repository mastery or unrestricted coding claim is made.",
-      "relatedExperimentIds": [
-        "learning-state-verification-and-rollback"
-      ],
-      "relationships": [
-        {
-          "type": "related",
-          "recordId": "learning-state-verification-and-rollback"
-        }
-      ],
+      "relatedExperimentIds": [],
+      "relationships": [],
       "publicProvenance": "Report-derived production qualification summary dated 2026-10-31; active-model identity was reconciled, but per-lane ancestor receipts were not independently rerun for publication.",
       "reportVersion": "LARI Full Report 2026-10-31T11:42:43.574Z",
       "sourceFingerprint": null,
-      "publishedAt": "2026-10-31T20:03:40.716Z",
+      "publishedAt": "2026-11-05T15:00:54.782Z",
       "lastReviewedAt": "2026-10-31T20:03:34.656Z"
     },
     {
@@ -261,77 +254,13 @@
       },
       "measurementConditions": "Every count is source-report-derived and inherited; no language-family qualification or recursive-composition test was freshly run in this release.",
       "limitations": "Bounded typed generator families; qualification is inherited, not newly rerun. Does not establish unrestricted language generation, broad semantics, arbitrary discourse invention, or general understanding.",
-      "relatedExperimentIds": [
-        "learning-state-verification-and-rollback"
-      ],
-      "relationships": [
-        {
-          "type": "related",
-          "recordId": "learning-state-verification-and-rollback"
-        }
-      ],
+      "relatedExperimentIds": [],
+      "relationships": [],
       "publicProvenance": "Report-derived active-record and inherited-qualification summary dated 2026-10-31; no private model hashes, record IDs, or evidence paths are published.",
       "reportVersion": "LARI Full Report 2026-10-31T11:42:43.574Z",
       "sourceFingerprint": null,
-      "publishedAt": "2026-10-31T20:03:40.716Z",
+      "publishedAt": "2026-11-05T15:00:54.782Z",
       "lastReviewedAt": "2026-10-31T20:03:34.659Z"
-    },
-    {
-      "id": "learning-state-verification-and-rollback",
-      "title": "Qualification keeps a verified candidate distinct from production",
-      "summary": "LARI’s documented governance separates evidence, isolated candidates, qualification, active-model state, and explicit promotion. A current qualification receipt verifies one isolated candidate on two workspace languages: fail-before/pass-after, persisted-candidate reload, and exact-operator removal restoring failure. The active model, registry, and runtime remained read-only, the candidate was not promoted, and external-model calls were zero. The report separately describes rollback controls for bounded production lanes; those rollback checks are inherited report evidence, not a fresh rollback test in this receipt.",
-      "researchQuestion": "What does one current qualification receipt establish about candidate testing and active-production boundaries?",
-      "researchArea": "Persistence, verification, and model governance",
-      "architectureComponent": "governance",
-      "whyItMatters": "A candidate passing a contract should remain distinct from an active production capability until its named qualification and promotion gates are satisfied.",
-      "status": "demonstrated",
-      "verificationStatus": "verified",
-      "lifecycleStatus": "candidate",
-      "sourceRecordId": "Workspace primitive qualification-lifecycle receipt · 2026-10-31",
-      "measuredAt": "2026-10-31T10:00:58.566Z",
-      "evaluationMethod": "Verify the isolated candidate against fail-before/pass-after workspace checks in JavaScript and Python; confirm persisted candidate reload, exact operator ablation, and unchanged active model, registry, and runtime.",
-      "baseline": "An unqualified active legacy record fails closed; production model and registry are protected during the isolated candidate test.",
-      "candidateMethod": "Bind the candidate primitive to its structured qualification evidence and exercise the defined workspace contracts.",
-      "comparisonConditions": "JavaScript and Python workspace cases; isolated candidate; fail-before/pass-after; persisted reload; exact operator ablation; read-only production state.",
-      "result": "Fail-before/pass-after passed in JavaScript and Python. Candidate reload and exact ablation passed; active model, registry, and runtime remained read-only; candidate was not promoted.",
-      "outcome": "One verified isolated qualification lifecycle; no broad safety or universal rollback claim.",
-      "environment": "Isolated candidate qualification; active model, registry, and runtime were checked read-only.",
-      "externalModelUsage": "Zero external-model calls.",
-      "coldReloadResult": "Persisted candidate reload passed.",
-      "causalAblationResult": "Removing the exact operator restored failure.",
-      "transferResult": "The receipt covers the named JavaScript and Python workspace checks; no broader transfer is claimed.",
-      "measurements": {
-        "languagesTested": 2,
-        "failBeforePassAfterPassed": true,
-        "persistedCandidateReload": true,
-        "exactOperatorAblationRestoresFailure": true,
-        "activeModelReadOnly": true,
-        "registryReadOnly": true,
-        "runtimeReadOnly": true,
-        "externalModelCalls": 0,
-        "candidatePromoted": false
-      },
-      "measurementConditions": "One dated qualification-lifecycle receipt; the receipt does not itself verify the separate production rollback metrics summarized in the report.",
-      "limitations": "One isolated primitive qualification. Does not prove universal correctness, safety, user-state persistence, or that every candidate type follows identical gates. Production rollback statements are attributed report evidence, not freshly re-tested here.",
-      "relatedExperimentIds": [
-        "five-bounded-coding-lanes",
-        "recap-bounded-language-and-composition"
-      ],
-      "relationships": [
-        {
-          "type": "related",
-          "recordId": "five-bounded-coding-lanes"
-        },
-        {
-          "type": "related",
-          "recordId": "recap-bounded-language-and-composition"
-        }
-      ],
-      "publicProvenance": "Owner-reviewed summary of the dated qualification-lifecycle receipt and source-report governance description; private operator IDs, hashes, and paths are withheld.",
-      "reportVersion": "LARI Full Report 2026-10-31T11:42:43.574Z",
-      "sourceFingerprint": null,
-      "publishedAt": "2026-10-31T20:03:40.716Z",
-      "lastReviewedAt": "2026-10-31T20:03:34.663Z"
     }
   ],
   "capabilities": [
@@ -373,7 +302,7 @@
       "publicProvenance": "Report-derived qualification summary; no private model hashes or evidence paths are published.",
       "reportVersion": "LARI Full Report 2026-10-31T11:42:43.574Z",
       "sourceFingerprint": null,
-      "publishedAt": "2026-10-31T20:03:40.716Z",
+      "publishedAt": "2026-11-05T15:00:54.782Z",
       "lastReviewedAt": "2026-10-31T20:03:34.657Z"
     },
     {
@@ -418,7 +347,7 @@
       "publicProvenance": "Report-derived capability summary; no private model identities or internal record identifiers are published.",
       "reportVersion": "LARI Full Report 2026-10-31T11:42:43.574Z",
       "sourceFingerprint": null,
-      "publishedAt": "2026-10-31T20:03:40.716Z",
+      "publishedAt": "2026-11-05T15:00:54.782Z",
       "lastReviewedAt": "2026-10-31T20:03:34.661Z"
     },
     {
@@ -454,14 +383,12 @@
       },
       "measurementConditions": "One dated receipt; separate production rollback claims remain report-derived.",
       "limitations": "One narrowly scoped candidate lifecycle receipt; no universal correctness, safety, or rollback guarantee.",
-      "relatedExperimentIds": [
-        "learning-state-verification-and-rollback"
-      ],
+      "relatedExperimentIds": [],
       "relationships": [],
       "publicProvenance": "Reviewed governance receipt; no private operator identifiers, hashes, or evidence paths are published.",
       "reportVersion": "LARI Full Report 2026-10-31T11:42:43.574Z",
       "sourceFingerprint": null,
-      "publishedAt": "2026-10-31T20:03:40.716Z",
+      "publishedAt": "2026-11-05T15:00:54.782Z",
       "lastReviewedAt": "2026-10-31T20:03:34.663Z"
     }
   ],
@@ -503,7 +430,7 @@
       "publicProvenance": "Reviewed milestone derived from the dated candidate receipt; no private evidence files are published.",
       "reportVersion": "LARI Full Report 2026-10-31T11:42:43.574Z",
       "sourceFingerprint": null,
-      "publishedAt": "2026-10-31T20:03:40.716Z",
+      "publishedAt": "2026-11-05T15:00:54.782Z",
       "lastReviewedAt": "2026-10-31T20:03:34.650Z"
     },
     {
@@ -543,7 +470,7 @@
       "publicProvenance": "Reviewed milestone derived from the dated negative-result receipts; no private evidence files are published.",
       "reportVersion": "LARI Full Report 2026-10-31T11:42:43.574Z",
       "sourceFingerprint": null,
-      "publishedAt": "2026-10-31T20:03:40.716Z",
+      "publishedAt": "2026-11-05T15:00:54.782Z",
       "lastReviewedAt": "2026-10-31T20:03:34.653Z"
     },
     {
@@ -582,7 +509,7 @@
       "publicProvenance": "Reviewed milestone derived from the dated stateful-induction receipts; no private evidence files are published.",
       "reportVersion": "LARI Full Report 2026-10-31T11:42:43.574Z",
       "sourceFingerprint": null,
-      "publishedAt": "2026-10-31T20:03:40.716Z",
+      "publishedAt": "2026-11-05T15:00:54.782Z",
       "lastReviewedAt": "2026-10-31T20:03:34.654Z"
     },
     {
@@ -621,7 +548,7 @@
       "publicProvenance": "Reviewed report-derived milestone; no private model identifiers or hashes are published.",
       "reportVersion": "LARI Full Report 2026-10-31T11:42:43.574Z",
       "sourceFingerprint": null,
-      "publishedAt": "2026-10-31T20:03:40.716Z",
+      "publishedAt": "2026-11-05T15:00:54.782Z",
       "lastReviewedAt": "2026-10-31T20:03:34.658Z"
     },
     {
@@ -660,7 +587,7 @@
       "publicProvenance": "Reviewed report-derived milestone; no private model hashes or internal records are published.",
       "reportVersion": "LARI Full Report 2026-10-31T11:42:43.574Z",
       "sourceFingerprint": null,
-      "publishedAt": "2026-10-31T20:03:40.716Z",
+      "publishedAt": "2026-11-05T15:00:54.782Z",
       "lastReviewedAt": "2026-10-31T20:03:34.662Z"
     },
     {
@@ -694,14 +621,12 @@
       },
       "measurementConditions": "One dated isolated-candidate receipt.",
       "limitations": "One isolated candidate; separate production rollback checks are report-derived and were not rerun here.",
-      "relatedExperimentIds": [
-        "learning-state-verification-and-rollback"
-      ],
+      "relatedExperimentIds": [],
       "relationships": [],
       "publicProvenance": "Reviewed milestone derived from the qualification-lifecycle receipt; no private evidence files are published.",
       "reportVersion": "LARI Full Report 2026-10-31T11:42:43.574Z",
       "sourceFingerprint": null,
-      "publishedAt": "2026-10-31T20:03:40.716Z",
+      "publishedAt": "2026-11-05T15:00:54.782Z",
       "lastReviewedAt": "2026-10-31T20:03:34.664Z"
     }
   ],

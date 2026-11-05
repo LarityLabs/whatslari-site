@@ -5,9 +5,13 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dist = path.join(root, 'dist');
+const snapshot = JSON.parse(await fs.readFile(path.join(root, 'data/approved/snapshot.json'), 'utf8'));
 const htmlFiles = await fs.readdir(dist, { recursive: true });
 const pages = htmlFiles.filter(file => String(file).endsWith(path.join('index.html')));
-assert.equal(pages.length, 29, 'canonical routes, approved experiment articles, and legacy redirects are prerendered');
+const staticRouteCount = 14;
+const fixedLegacyRedirectCount = 3;
+const experimentRouteCopies = 2; // canonical detail page plus legacy redirect
+assert.equal(pages.length, staticRouteCount + fixedLegacyRedirectCount + snapshot.experiments.length * experimentRouteCopies, 'canonical routes, approved experiment articles, and legacy redirects are prerendered');
 assert.ok(htmlFiles.includes('google4aaa287e48ffc299.html'), 'Google site verification file is included in the generated site');
 assert.equal(await fs.readFile(path.join(dist, 'google4aaa287e48ffc299.html'), 'utf8'), 'google-site-verification: google4aaa287e48ffc299.html');
 assert.ok(pages.includes(path.join('live','experiments','index.html')));
@@ -115,7 +119,6 @@ assert.match(contact, /"telephone":"\+1-814-315-2009"/);
 assert.match(about, /href="mailto:gorygrey@whatslari\.com"/);
 assert.match(about, /href="tel:\+18143152009"/);
 const livePage = await fs.readFile(path.join(dist,'live/index.html'),'utf8');
-const snapshot = JSON.parse(await fs.readFile(path.join(root, 'data/approved/snapshot.json'), 'utf8'));
 assert.match(livePage,/Lari Live/);
 assert.match(livePage,/approved experiment records/);
 assert.match(livePage,/live\/experiments\//);
@@ -131,7 +134,7 @@ assert.match(livePage,/data-ocean-zoom-in/,'the ocean has accessible zoom contro
 assert.match(livePage,/moving 0s and 1s/,'the hero explains the binary field without implying private runtime visibility');
 assert.match(livePage,/data-network-node=/,'approved experiment records are selectable network anchors');
 assert.match(livePage,/Private M0–M5 roadmap stages and progress are not exposed here/,'unapproved private roadmap details remain withheld');
-assert.match(livePage,/06<\/span><small>approved experiment records/);
+assert.match(livePage,new RegExp(`${String(snapshot.experiments.length).padStart(2,'0')}<\\/span><small>approved experiment records`));
 assert.match(livePage,/06<\/span><small>reviewed milestones/);
 assert.match(livePage,/00<\/span><small>approved metrics/);
 assert.doesNotMatch(livePage,/14 Approved Events|38%|E-014|R-009|Development Activity \(7d\)/,'mockup-only activity, labels, and percentages are not copied');
@@ -139,13 +142,13 @@ assert.match(livePage,/data-activity-refresh/);
 assert.match(livePage,/data-areas="[^"]*"/);
 assert.match(livePage,/Research measurement time and public publication time are listed separately/);
 assert.match(livePage,/No private runtime connection/);
-assert.equal((livePage.match(/data-activity-card/g)||[]).length,6,'activity feed reuses approved research records without duplicating milestone claims');
+assert.equal((livePage.match(/data-activity-card/g)||[]).length,snapshot.experiments.length,'activity feed reuses approved research records without duplicating milestone claims');
 const activityIds = [...livePage.matchAll(/data-source-id="([a-z0-9-]+)"/g)].map(match => match[1]);
 assert.equal(new Set(activityIds).size,activityIds.length,'the activity feed has no duplicate event identities');
 const liveManifest = JSON.parse(await fs.readFile(path.join(root,'dist/data/manifest.json'),'utf8'));
 assert.equal(liveManifest.snapshotId,snapshot.snapshotId);
 assert.equal(liveManifest.contentDigest,snapshot.contentDigest);
-assert.deepEqual(liveManifest.recordCounts,{ experiments:6, capabilities:3, milestones:6, metrics:0 });
+assert.deepEqual(liveManifest.recordCounts,{ experiments:snapshot.experiments.length, capabilities:snapshot.capabilities.length, milestones:snapshot.milestones.length, metrics:snapshot.metrics.length });
 const liveController = await fs.readFile(path.join(root,'dist/assets/site.js'),'utf8');
 assert.match(liveController,/crypto\.subtle\.digest/);
 assert.match(liveController,/setInterval\(checkForActivity, 60_000\)/);
@@ -191,22 +194,25 @@ assert.match(mobileNav, /\/live\/timeline\//);
 
 const sitemap = await fs.readFile(path.join(dist, 'sitemap.xml'), 'utf8');
 assert.ok(sitemap.startsWith('<?xml version="1.0" encoding="UTF-8"?>'));
-assert.equal((sitemap.match(/<url>/g) || []).length, 20, 'sitemap lists canonical routes and approved articles, excluding aliases');
-assert.equal((sitemap.match(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/g) || []).length, 20);
+const sitemapUrlCount = 14 + snapshot.experiments.length;
+assert.equal((sitemap.match(/<url>/g) || []).length, sitemapUrlCount, 'sitemap lists canonical routes and approved articles, excluding aliases');
+assert.equal((sitemap.match(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/g) || []).length, sitemapUrlCount);
 assert.doesNotMatch(sitemap.replace(/<\?xml[^>]+>/, ''), /\?|localhost|github\.io/i);
 const robots = await fs.readFile(path.join(dist, 'robots.txt'), 'utf8');
 assert.match(robots, /User-agent: \*\s+Allow: \/\s+Sitemap: https:\/\/whatslari\.com\/sitemap\.xml/);
 
 for (const row of snapshot.experiments) assert.ok(communityPage.includes(`/live/experiments/${row.id}/#discussion-title`), `community discussion discovery links to ${row.id}`);
 assert.equal(snapshot.status, 'approved');
-assert.equal(snapshot.experiments.length, 6);
+assert.equal(snapshot.experiments.length, 5, 'the authorized public snapshot contains five experiments');
 assert.equal(snapshot.capabilities.length, 3);
 assert.equal(snapshot.milestones.length, 6);
 assert.equal(snapshot.metrics.length, 0);
 assert.deepEqual(new Set(snapshot.experiments.map(row => row.id)), new Set([
   'blank-workspace-javascript-construction','go-planner-research-to-construction','stateful-relational-induction',
-  'five-bounded-coding-lanes','recap-bounded-language-and-composition','learning-state-verification-and-rollback'
+  'five-bounded-coding-lanes','recap-bounded-language-and-composition'
 ]));
+assert.ok(!snapshot.experiments.some(row => row.id === 'learning-state-verification-and-rollback'), 'the held lifecycle record is excluded from the public snapshot');
+assert.ok(!pages.includes(path.join('live','experiments','learning-state-verification-and-rollback','index.html')), 'the held lifecycle record has no generated public route');
 assert.ok(!snapshot.experiments.some(row => /cumulative|persistence/i.test(row.id)), 'held composition and fixture-backed persistence studies are excluded');
 assert.equal(snapshot.sourceReport.sha256, undefined, 'private report hashes do not enter the public snapshot');
 assert.equal(snapshot.sourceReport.fingerprint, undefined, 'private fingerprints do not enter the public snapshot');

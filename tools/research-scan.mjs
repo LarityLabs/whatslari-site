@@ -3,7 +3,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const root = path.resolve(process.env.LARI_SITE_ROOT || path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'));
 const reportPath = process.env.LARI_REPORT_PATH;
 if (!reportPath) throw new Error('Set LARI_REPORT_PATH to the designated local source report; private source paths are not embedded in this public repository.');
 const privateDir = path.resolve(process.env.LARI_PRIVATE_REVIEW_DIR || path.join(root, 'private-review'));
@@ -52,6 +52,7 @@ for (const section of sections) {
   const priorEntry = existing.entries?.find(row => row.scanId === id);
   const approvedDuplicate = approvedIds.has(id) || approvedTitles.has(section.title.toLowerCase().replace(/[^a-z0-9]+/g,' ').trim());
   const entry = { scanId: id, title: section.title, date, reportStatus, statusChangedSinceLastScan:priorEntry ? priorEntry.reportStatus !== reportStatus : false, reportEvidenceClass: 'report-derived; not yet independently artifact-verified', referenceCount: refs.length, references: resolutions, approvedDuplicate, duplicateSectionIds: [], sectionSha256, evidenceDigest, changeStatus: priorEntry ? priorEntry.sectionSha256 === sectionSha256 && priorEntry.evidenceDigest === evidenceDigest ? 'unchanged since last scan' : 'source text or linked evidence changed since last scan' : 'newly discovered section', excerpt, disposition: priorEntry?.sectionSha256 === sectionSha256 && priorEntry.evidenceDigest === evidenceDigest ? priorEntry.disposition : 'new-for-review' };
+  entry.sourceSectionTitle = section.title;
   normalized.set(key, entry); entries.push(entry);
 }
 
@@ -156,6 +157,11 @@ try {
     });
   }
   entries.unshift(...generated);
+  for (const entry of generated) {
+    const proposal = editorialRecords.find(item => 'editorial-' + item.record.id === entry.scanId);
+    const matches = proposal ? sections.filter(section => section.title.toLowerCase().includes(proposal.reportSectionIncludes.toLowerCase())) : [];
+    entry.sourceSectionTitle = matches.length === 1 ? matches[0].title : null;
+  }
   editorialRelease = { status: generated.length === editorialRecords.length && generated.every(item => !item.approvalBlockedReason) ? 'all-sources-resolved' : 'needs-review-or-source-reconciliation', records: generated.length, selectedStories: (proposalManifest.records || []).length, proposalDigest };
   }
 } catch (error) { editorialRelease = { status: 'unavailable-or-unresolved', records: 0, reason: error.message }; }
@@ -173,5 +179,5 @@ for (const entry of entries) {
   seen.add(key);
 }
 if (additions.length) await fs.appendFile(ledgerPath, `${additions.map(row => JSON.stringify(row)).join('\n')}\n`, 'utf8');
-await import('./generate-paper-candidates.mjs');
+if (process.env.LARI_SKIP_DRAFT_GENERATION !== '1') await import('./generate-paper-candidates.mjs');
 process.stdout.write(`Private scan complete: ${headings.length} headings; ${entries.length} substantive sections; ${result.duplicatesDetected} duplicate sections; ${result.unresolvedReferences.length} unresolved local references.\nReport fingerprint: ${fingerprint || 'not present'}\nReport SHA-256: ${reportSha256}\nCandidates remain private and unapproved: ${outputPath}\n`);

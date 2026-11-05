@@ -202,8 +202,14 @@ for (const [oldRoute, newRoute] of aliases) {
   await fs.writeFile(path.join(dir, 'index.html'), `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex,follow"><link rel="canonical" href="${destination}"><meta http-equiv="refresh" content="0;url=${newRoute}"><title>Page moved: ${newRoute} | LARI</title></head><body><main><h1>This page has moved</h1><p><a href="${newRoute}">Continue to ${newRoute}</a></p></main><script>location.replace(${JSON.stringify(newRoute)})</script></body></html>`, 'utf8');
 }
 await fs.cp(path.join(root, 'assets'), path.join(out, 'assets'), { recursive: true });
+const publishedExperimentIds = new Set(snapshot.experiments.map(row => row.id));
+const socialCardsDir = path.join(out, 'assets', 'social-cards');
+for (const file of await fs.readdir(socialCardsDir).catch(() => [])) {
+  const match = /^experiment-([a-z0-9-]+)\.png$/i.exec(file);
+  if (match && !publishedExperimentIds.has(match[1])) await fs.rm(path.join(socialCardsDir, file));
+}
 await fs.cp(path.join(root, 'data/approved'), path.join(out, 'data'), { recursive: true });
-const publicManifest = { schemaVersion: 1, snapshotId: snapshot.snapshotId, status: snapshot.status, publishedAt: snapshot.publishedAt, generatedAt: snapshot.generatedAt, contentDigest: snapshot.contentDigest, snapshotUrl: '/data/approved/snapshot.json', recordCounts: { experiments: snapshot.experiments.length, capabilities: snapshot.capabilities.length, milestones: snapshot.milestones.length, metrics: snapshot.metrics.length } };
+const publicManifest = { schemaVersion: 1, snapshotId: snapshot.snapshotId, status: snapshot.status, publishedAt: snapshot.publishedAt, generatedAt: snapshot.generatedAt, contentDigest: snapshot.contentDigest, snapshotUrl: '/data/snapshot.json', recordCounts: { experiments: snapshot.experiments.length, capabilities: snapshot.capabilities.length, milestones: snapshot.milestones.length, metrics: snapshot.metrics.length } };
 await fs.writeFile(path.join(out, 'data/manifest.json'), `${JSON.stringify(publicManifest, null, 2)}\n`, 'utf8');
 await fs.copyFile(path.join(root, 'robots.txt'), path.join(out, 'robots.txt'));
 await fs.copyFile(path.join(root, 'CNAME'), path.join(out, 'CNAME'));

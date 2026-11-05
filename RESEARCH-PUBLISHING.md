@@ -16,15 +16,23 @@ npm run research:drafts
 
 The scan keeps a private append-only `private-review/research-ledger.jsonl` and replaces the current `research-scan.json`. Paper candidates are labeled unapproved; unknown and untested fields remain explicit. Candidate Markdown, local evidence references and hashes remain ignored and are not copied to `dist/`.
 
+For an incremental source index that must not regenerate paper drafts, run `npm run research:index`. It updates the private scan and ledger only. The existing `research:scan` command retains its prior scan-plus-draft behavior for the full-report workflow.
+
+When a report fingerprint changes, use `npm run research:rebind` to inspect a hash-bound plan before applying it. Apply only an all-unchanged plan with the exact `APPLY REBIND PLAN <plan-sha256>` confirmation. Rebinding updates proposal source identity, not approval state; changed or unresolved evidence remains held for review.
+
 ## Human publication review
 
 1. Inspect the private scan, structured ledger entry, candidate article, and each cited source artifact.
-2. Use `npm run research:review` to record an explicit per-record decision and exact public-content hash in the ignored approval manifest.
-3. Run `npm run research:validate` to check source freshness, evidence digest, candidate hash, public allowlist, claim scope, and privacy.
+2. Use `npm run research:review` in the local CLI to record a decision. Approval requires typing `AUTHORIZE <stable-record-id> REPORT <current-report-sha256> CONTENT <approved-content-sha256>` for the exact record. A retry appends another event; it does not replace the previous event.
+3. Run `npm run research:validate` to check the exact report and source fingerprint, scan entry, unique report section, hashable evidence files, per-record content hash, current owner authorization, allowlist, public claim scope, and privacy.
 4. Run `npm run research:export` only after the owner has approved the exact records. Export preserves the previous approved snapshot for rollback; it does not push or deploy.
 5. Run the site tests, `npm run check`, and `npm run build` before considering a local preview.
 
 To restore a previously exported and retained snapshot locally, use `npm run research:rollback -- snapshot-YYYYMMDDhhmmss "reason for rollback"`. The command validates both snapshots, preserves the current one in immutable history, records a private rollback audit entry, and never publishes remotely.
+
+Current approval state is a schema-3 projection of `private-review/decision-events.jsonl`. Existing schema-2 receipts and decisions are archived byte-for-byte on first review and entered as legacy events; legacy events preserve history but never authorize a newer source identity. The event log uses a SHA-256 linked sequence to detect edits to individual events or chain links. It is not a digital signature and does not independently authenticate the reviewer's real-world identity.
+
+Focused publication-lineage checks run with `npm run research:test-lineage`; they use disposable copies under the operating-system temporary directory. They do not reauthorize production records or export a snapshot.
 
 The scan and paper generator do not certify claims or approve publication. A report update does not automatically place any record in the public snapshot. Static Lari Live activity is derived from the same approved experiment and milestone records used for article pages; there is no live runtime connection.
 

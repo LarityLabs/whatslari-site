@@ -116,5 +116,5 @@ for (const [audio, expectedHash] of Object.entries(approvedAudio)) {
 assert.doesNotMatch(controller, /\b[A-Z]:\\[^\\\s]+(?:\\[^\\\s]+)+/i, 'absolute local Windows paths must not ship in the public controller');
 const publicSnapshot = JSON.parse(await fs.readFile(path.join(root, 'data/approved/snapshot.json'), 'utf8'));
 assert.equal(publicSnapshot.status, 'approved');
-assert.equal(publicSnapshot.experiments.length, 6, 'CRT integration build preserves the reviewed public research snapshot');
+assert.equal(publicSnapshot.experiments.length, 5, 'CRT integration build preserves the current reviewed public research snapshot');
 process.stdout.write('CRT rendering and branding integration checks passed.\n');
