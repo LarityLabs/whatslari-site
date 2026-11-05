@@ -201,7 +201,7 @@ function sub(a,b){return a.map((v,i)=>v-b[i]);}function dot(a,b){return a.reduce
 let light=isLight(),yaw=cameraYaw,pitch=cameraPitch,dist=cameraDistance,simTime=0,last=performance.now(),acc=0,autoRipple=0,drag=false,downX=0,downY=0,moved=false;
 function applyTheme(){
   light=isLight();
-  if(isCrtPalette){gl.clearColor(.003,.009,.005,1);gl.uniform3f(U.uInk,.18,.72,.43);gl.uniform1f(U.uLight,reduced.matches?.48:.58);return;}
+  if(isCrtPalette){gl.clearColor(.003,.009,.005,1);gl.uniform3f(U.uInk,.18,.72,.43);gl.uniform1f(U.uLight,reduced.matches?.55:.58);return;}
   if(light){gl.clearColor(.958,.972,.954,1);gl.uniform3f(U.uInk,.04,.37,.23);gl.uniform1f(U.uLight,.88);}else{gl.clearColor(.018,.041,.031,1);gl.uniform3f(U.uInk,.24,1.,.61);gl.uniform1f(U.uLight,1.);}
 }
 applyCurrentTheme=applyTheme;

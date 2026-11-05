@@ -196,7 +196,7 @@ export function mountCrtEntrance() {
       pixelRatioCap: 1.15,
       camera: { yaw: 0, pitch: 0.43, distance: 35 },
       autoImpacts: false,
-      reducedMotionScale: 0.14,
+      reducedMotionScale: 0.38,
       pauseLabel: 'Pause animation',
       resumeLabel: 'Resume animation'
     });
