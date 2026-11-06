@@ -35,7 +35,7 @@
 .crt-sticky-target{left:88.2597%;top:81.9521%;width:10.36%;height:8.56%;transform:translate(-50%,-50%) rotate(-3deg);border-radius:3px;z-index:4}
 .crt-screen-power{left:17.1%;top:12.3%;width:63.2%;height:57%;border-radius:12%;z-index:1}
 .crt-physical-power:focus-visible,.crt-screen-power:focus-visible,.crt-sticky-target:focus-visible{outline:2px solid rgba(177,255,190,.75);outline-offset:2px;box-shadow:0 0 12px rgba(102,255,129,.3)}
-.crt-physical-power:focus-visible{outline-offset:8px}
+.crt-physical-power:focus-visible{outline:none;box-shadow:none}
 .crt-physical-power:active{transform:translate(-50%,-50%)}
 .crt-physical-power:after{content:"";position:absolute;inset:9px;border:1px solid rgba(35,27,15,.55);border-radius:50%;opacity:0;box-shadow:inset 0 2px 4px rgba(0,0,0,.38);transition:opacity .08s ease,transform .08s ease}
 #crt-entrance.state-powering-on .crt-physical-power:after{opacity:.72;transform:translateY(1px)}

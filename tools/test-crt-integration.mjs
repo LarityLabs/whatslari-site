@@ -121,6 +121,7 @@ assert.match(controller, /stickyPower\.addEventListener\('click', onPhysicalPowe
 assert.match(controller, /stickyPower\.disabled = state !== CRT_STATES\.OFF/);
 assert.match(css, /\.crt-physical-power\{left:78\.5221%;top:79\.7422%/);
 assert.match(css, /\.crt-physical-power\{[^}]*z-index:5\}/);
+assert.match(css, /\.crt-physical-power:focus-visible\{outline:none;box-shadow:none\}/, 'the startup focused power button does not show the green circle');
 assert.match(css, /state-powering-on #crt-note-peel/);
 assert.doesNotMatch(css, /state-powering-on #crt-sticky-arrow/);
 assert.match(css, /state-tube-ignition \.crt-sticky-overlay/);
