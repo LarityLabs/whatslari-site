@@ -24,6 +24,37 @@ if (root) {
   if(nodeButtons[0])selectNode(nodeButtons[0]);
   root.querySelectorAll('[data-observatory-anchor]').forEach(button=>button.addEventListener('click',()=>{const target=root.querySelector(`[data-network-node="${CSS.escape(button.dataset.observatoryAnchor)}"]`);if(target){target.click();root.querySelector('#live-network')?.scrollIntoView({behavior:reduced.matches?'auto':'smooth',block:'start'});}}));
 
+  const carousel=root.querySelector('.observatory-record-anchors');
+  const carouselCards=carousel?[...carousel.querySelectorAll('[data-observatory-anchor]')]:[];
+  const pagination=root.querySelector('.observatory-pagination');
+  if(carousel&&pagination&&carouselCards.length){
+    let activeCard=0,scrollFrame=0;
+    const pageButtons=carouselCards.map((card,index)=>{
+      const dot=document.createElement('button');dot.type='button';dot.setAttribute('aria-label',`Show research card ${index+1} of ${carouselCards.length}`);
+      dot.addEventListener('click',()=>carousel.scrollTo({left:card.offsetLeft-carouselCards[0].offsetLeft,behavior:reduced.matches?'auto':'smooth'}));
+      pagination.append(dot);return dot;
+    });
+    const syncPagination=()=>{
+      scrollFrame=0;
+      const left=carousel.scrollLeft;
+      let closest=0,nearest=Infinity;
+      carouselCards.forEach((card,index)=>{const distance=Math.abs(card.offsetLeft-carouselCards[0].offsetLeft-left);if(distance<nearest){nearest=distance;closest=index;}});
+      activeCard=closest;
+      pageButtons.forEach((dot,index)=>{if(index===activeCard)dot.setAttribute('aria-current','true');else dot.removeAttribute('aria-current');});
+    };
+    carousel.addEventListener('scroll',()=>{if(!scrollFrame)scrollFrame=requestAnimationFrame(syncPagination)},{passive:true});
+    carousel.addEventListener('keydown',event=>{
+      let next=activeCard;
+      if(event.key==='ArrowRight')next=Math.min(carouselCards.length-1,activeCard+1);
+      else if(event.key==='ArrowLeft')next=Math.max(0,activeCard-1);
+      else if(event.key==='Home')next=0;
+      else if(event.key==='End')next=carouselCards.length-1;
+      else return;
+      event.preventDefault();carouselCards[next].focus();carousel.scrollTo({left:carouselCards[next].offsetLeft-carouselCards[0].offsetLeft,behavior:reduced.matches?'auto':'smooth'});
+    });
+    syncPagination();
+  }
+
   let recapIndex=0, recapTimer=0;
   const recapTitle=root.querySelector('[data-recap-title]'),recapLink=root.querySelector('[data-recap-link]'),recapSummary=root.querySelector('[data-recap-summary]'),recapLimits=root.querySelector('[data-recap-limits]'),recapCount=root.querySelector('[data-recap-count]'),recapUpdate=root.querySelector('[data-recap-update]');
   const visitKey='lari-live-last-seen-v1';
@@ -47,7 +78,7 @@ if (root) {
     const edges=root.querySelector('.network-edges'),dots=root.querySelector('.network-dots');
     if(edges&&dots){edges.replaceChildren();dots.replaceChildren();for(const {row,x,y} of positions){const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');dot.dataset.dot=row.id;dot.setAttribute('cx',`${x}%`);dot.setAttribute('cy',`${y}%`);dot.setAttribute('r','6');dots.append(dot);for(const id of related(row)){if(row.id>=id)continue;const target=positions.find(item=>item.row.id===id);if(!target)continue;const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.dataset.edge=`${row.id} ${id}`;line.setAttribute('x1',`${x}%`);line.setAttribute('y1',`${y}%`);line.setAttribute('x2',`${target.x}%`);line.setAttribute('y2',`${target.y}%`);edges.append(line);}}}
     const journey=root.querySelector('.journey-list');if(journey)journey.replaceChildren(...milestones.map((row,i)=>{const li=document.createElement('li');li.className='journey-item';const number=document.createElement('span');number.className='journey-index';number.textContent=String(i+1).padStart(2,'0');const content=document.createElement('div'),eyebrow=document.createElement('p'),heading=document.createElement('h3'),summary=document.createElement('p'),date=document.createElement('small');eyebrow.className='eyebrow';eyebrow.textContent=`Reviewed public milestone · ${row.verificationStatus||'status unavailable'}`;heading.textContent=row.title;summary.textContent=row.summary;date.textContent=`Measured ${row.measuredAt||'date unavailable'} · Published ${row.publishedAt||'date unavailable'}`;content.append(eyebrow,heading,summary,date);const links=(row.relatedExperimentIds||[]).map(id=>records.find(record=>record.id===id)).filter(Boolean);if(links.length){const p=document.createElement('p');p.textContent='Evidence: ';for(const record of links){const a=document.createElement('a');a.href=`/live/experiments/${encodeURIComponent(record.id)}/`;a.textContent=`${record.title} ↗`;p.append(a,document.createTextNode(' '));}content.append(p);}li.append(number,content);return li;}));
-    const count=root.querySelectorAll('.observatory-data span');if(count.length===3){count[0].textContent=String(records.length).padStart(2,'0');count[1].textContent=String(milestones.length).padStart(2,'0');count[2].textContent=String(next.metrics?.length||0).padStart(2,'0');}
+    const count=root.querySelectorAll('[data-stat-value]');if(count.length===3){count[0].textContent=String(records.length).padStart(2,'0');count[1].textContent=String(milestones.length).padStart(2,'0');count[2].textContent=String(next.metrics?.length||0).padStart(2,'0');}
     const first=root.querySelector('.network-node-list [data-network-node]');if(first)selectNode(first);
   });
 }

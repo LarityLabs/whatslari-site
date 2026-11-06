@@ -20,3 +20,35 @@
 .binary-ocean-controls{display:flex;gap:6px;align-items:center;margin-top:14px}.binary-ocean-controls .quiet-button{margin:0;min-width:38px;min-height:36px}.observatory-state{max-width:360px}
 @media(max-width:850px){.observatory-copy{right:clamp(238px,36vw,266px);max-width:none}.observatory-copy h2,.observatory-copy>p:not(.eyebrow){max-width:100%}.observatory-anchor{left:66%;top:69%;width:124px;height:124px}.anchor-ring{inset:-9px}}
 @media(max-width:580px){.observatory-copy{left:20px;right:18px;max-width:none}.observatory-copy h2{max-width:340px}.observatory-copy>p:not(.eyebrow){max-width:360px}.observatory-anchor{display:none}.observatory-data{bottom:83px;right:14px;left:auto}.observatory-record-anchors{bottom:18px}}
+
+/* Mobile hero: put every content block in flow so the canvas cannot cover it. */
+.observatory-canvas-viewport{position:absolute;inset:0;z-index:0;overflow:hidden}
+@media(max-width:580px){
+  .observatory-stage{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"eyebrow" "title" "description" "status" "ocean" "controls" "data" "records" "pagination";gap:14px;min-width:0;min-height:0;padding:22px 16px 14px;overflow:hidden}
+  .observatory-canvas-viewport{position:relative;grid-area:ocean;inset:auto;width:100%;height:clamp(150px,52vw,210px);min-width:0;border-top:1px solid color-mix(in srgb,var(--green) 25%,transparent);border-bottom:1px solid color-mix(in srgb,var(--green) 25%,transparent)}
+  .observatory-stage canvas{inset:0;width:100%;height:100%;max-width:100%;touch-action:pan-y}
+  .observatory-copy{display:contents}
+  .observatory-copy>.eyebrow{grid-area:copy;margin:0 2px}
+  .observatory-copy h2{grid-area:title;min-width:0;margin:0 2px}
+  .observatory-copy>p:not(.eyebrow){grid-area:description;min-width:0;margin:0 2px}
+  .observatory-state{grid-area:status;min-width:0;margin:0 2px}
+  .observatory-copy h2{max-width:none;font-size:clamp(1.9rem,8vw,2.45rem)}
+  .observatory-copy>p:not(.eyebrow){max-width:48ch;font-size:.85rem;line-height:1.55}
+  .binary-ocean-controls{position:relative;grid-area:controls;z-index:4;flex-wrap:wrap;margin:0 2px}
+  .binary-ocean-controls .quiet-button{min-height:40px}
+  .observatory-data{position:relative;grid-area:data;inset:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;min-width:0;width:100%;padding:12px 8px;background:color-mix(in srgb,var(--paper) 88%,transparent);border:1px solid var(--obs-line);border-left:2px solid var(--green)}
+  .observatory-stat{display:flex;min-width:0;flex-direction:column;align-items:center;gap:3px;text-align:center}
+  .observatory-stat span{font:clamp(1.45rem,7vw,2rem)/1 var(--mono);color:var(--green);font-variant-numeric:tabular-nums}
+  .observatory-stat small{font:clamp(.57rem,2.65vw,.68rem)/1.3 var(--mono);color:var(--muted);overflow-wrap:anywhere}
+  .observatory-record-anchors{position:relative;grid-area:records;inset:auto;display:flex;gap:12px;width:100%;min-width:0;margin:0;padding:3px 1px 8px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-snap-stop:always;scroll-padding-inline:1px;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;}
+  .observatory-record-anchors::-webkit-scrollbar{display:none}
+  .observatory-record-anchors button{position:relative;flex:0 0 86%;min-width:0;max-width:none;min-height:120px;align-content:start;grid-template-columns:auto minmax(0,1fr);gap:10px;padding:14px 13px;white-space:normal;overflow-wrap:anywhere;scroll-snap-align:start;scroll-snap-stop:always;font-size:.7rem;line-height:1.45}
+  .observatory-record-anchors button>span:last-child{min-width:0;overflow-wrap:anywhere}
+  .observatory-record-anchors button:focus-visible,.observatory-pagination button:focus-visible{outline:2px solid var(--green);outline-offset:3px}
+  .observatory-pagination{grid-area:pagination;display:flex;justify-content:center;align-items:center;gap:9px;min-height:14px}
+  .observatory-pagination button{width:8px;height:8px;padding:0;border:0;border-radius:50%;background:color-mix(in srgb,var(--muted) 65%,transparent);cursor:pointer}
+  .observatory-pagination button[aria-current="true"]{background:var(--green);box-shadow:0 0 0 2px color-mix(in srgb,var(--green) 20%,transparent)}
+  [data-theme="light"] .observatory-record-anchors button{background:color-mix(in srgb,var(--paper) 94%,transparent)}
+}
+@media(max-width:360px){.observatory-stage{padding-inline:12px}.observatory-copy{padding-inline:0}.observatory-data{padding-inline:4px}.observatory-stat small{font-size:.56rem}.observatory-record-anchors button{flex-basis:86%;padding:12px 10px}}
+@media(prefers-reduced-motion:reduce){.observatory-record-anchors{scroll-behavior:auto}}
