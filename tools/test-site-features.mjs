@@ -132,7 +132,9 @@ assert.match(livePage,/assets\/live-observatory\.js\?v=[a-f0-9]{12}/,'Lari Live 
 assert.match(livePage,/data-observatory-canvas/,'the live page includes a GPU-enhanced surface');
 assert.match(livePage,/data-observatory-fallback/,'the live page includes a canvas fallback for browsers without WebGL2');
 assert.match(livePage,/data-ocean-zoom-in/,'the ocean has accessible zoom controls');
-assert.match(livePage,/moving 0s and 1s/,'the hero explains the binary field without implying private runtime visibility');
+assert.match(livePage,/id="observatory-title">Ocean of Intelligence</,'the binary ocean uses the requested concise title');
+assert.match(livePage,/aria-label="Interactive three-dimensional ocean/,'the canvas keeps its interaction guidance accessible');
+assert.doesNotMatch(livePage,/The ocean is drawn in your browser from moving 0s and 1s/,'the hero omits the unwanted visualization disclaimer');
 assert.match(livePage,/data-network-node=/,'approved experiment records are selectable network anchors');
 assert.match(livePage,/Private M0–M5 roadmap stages and progress are not exposed here/,'unapproved private roadmap details remain withheld');
 assert.match(livePage,new RegExp(`data-stat-value>${String(snapshot.experiments.length).padStart(2,'0')}<\\/span><small>Experiments`));
@@ -167,7 +169,7 @@ assert.match(builtObservatory,/event\.key==='ArrowRight'/,'mobile carousel suppo
 const observatoryCss = await fs.readFile(path.join(root,'dist/assets/live-observatory.css'),'utf8');
 assert.match(observatoryCss,/scroll-snap-type:x mandatory/,'mobile research cards use scroll snapping');
 assert.match(observatoryCss,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/,'mobile public stats use a compact three-column row');
-assert.match(observatoryCss,/observatory-copy>\.eyebrow\{grid-area:eyebrow/,'mobile intro text maps to the defined hero grid area');
+assert.match(observatoryCss,/grid-template-areas:"title" "ocean" "controls" "data" "records" "pagination"/,'mobile hero uses only defined grid areas');
 assert.match(home,/src="\/assets\/site\.js\?v=[a-f0-9]{12}"/,'the site entry point uses a content version');
 assert.match(builtSite,/from '\.\/crt-entrance\.js\?v=[a-f0-9]{12}'/,'the CRT controller import uses a content version');
 assert.match(builtCrtController,/from '\.\/binary-ocean\.js\?v=[a-f0-9]{12}'/,'the CRT and Lari Live point to the same versioned renderer');
