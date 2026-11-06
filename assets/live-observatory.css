@@ -28,7 +28,7 @@
   .observatory-canvas-viewport{position:relative;grid-area:ocean;inset:auto;width:100%;height:clamp(150px,52vw,210px);min-width:0;border-top:1px solid color-mix(in srgb,var(--green) 25%,transparent);border-bottom:1px solid color-mix(in srgb,var(--green) 25%,transparent)}
   .observatory-stage canvas{inset:0;width:100%;height:100%;max-width:100%;touch-action:pan-y}
   .observatory-copy{display:contents}
-  .observatory-copy>.eyebrow{grid-area:copy;margin:0 2px}
+  .observatory-copy>.eyebrow{grid-area:eyebrow;margin:0 2px}
   .observatory-copy h2{grid-area:title;min-width:0;margin:0 2px}
   .observatory-copy>p:not(.eyebrow){grid-area:description;min-width:0;margin:0 2px}
   .observatory-state{grid-area:status;min-width:0;margin:0 2px}

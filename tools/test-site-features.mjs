@@ -167,6 +167,7 @@ assert.match(builtObservatory,/event\.key==='ArrowRight'/,'mobile carousel suppo
 const observatoryCss = await fs.readFile(path.join(root,'dist/assets/live-observatory.css'),'utf8');
 assert.match(observatoryCss,/scroll-snap-type:x mandatory/,'mobile research cards use scroll snapping');
 assert.match(observatoryCss,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/,'mobile public stats use a compact three-column row');
+assert.match(observatoryCss,/observatory-copy>\.eyebrow\{grid-area:eyebrow/,'mobile intro text maps to the defined hero grid area');
 assert.match(home,/src="\/assets\/site\.js\?v=[a-f0-9]{12}"/,'the site entry point uses a content version');
 assert.match(builtSite,/from '\.\/crt-entrance\.js\?v=[a-f0-9]{12}'/,'the CRT controller import uses a content version');
 assert.match(builtCrtController,/from '\.\/binary-ocean\.js\?v=[a-f0-9]{12}'/,'the CRT and Lari Live point to the same versioned renderer');
