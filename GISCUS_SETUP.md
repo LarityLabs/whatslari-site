@@ -16,22 +16,22 @@ The site embeds giscus using the owner-confirmed configuration in `site.config.j
 - Reactions: enabled; metadata: enabled; comment box: top; iframe loading: lazy; language: English
 - Theme: initialized from the site’s Light/Dark/System preference and synchronized when it changes
 
-The generated discussion sections appear on `/live/`, `/live/experiments/`, `/live/capabilities/`, `/live/timeline/`, `/research/`, `/research/methods/`, `/research/verification-and-claim-scope/`, `/community/`, and each **approved** `/live/experiments/{id}/` detail page. They are not generated for candidate articles, the request form, or legacy redirect routes. The snapshot remains the sole source of approved experiment detail pages.
+The generated discussion sections appear on `/research/`, `/research/experiments/`, `/research/capabilities/`, `/research/timeline/`, `/research/methods/`, `/research/verification-and-claim-scope/`, `/community/`, and each **approved** `/research/experiments/{id}/` detail page. They are not generated for candidate articles, the request form, or legacy redirect routes. The snapshot remains the sole source of approved experiment detail pages. Former `/live/` collection and article paths redirect to their corresponding Research destinations.
 
-Each eligible page declares `meta[name="giscus:backlink"]` with its canonical trailing-slash URL and uses `pathname` mapping, so query strings do not create separate discussions or backlinks. Keep canonical URLs stable. With strict matching enabled, giscus hashes the page's mapped search term (the canonical pathname here) and finds that SHA-1 in the discussion body; the six seeded discussions carry the corresponding `<!-- sha1: … -->` marker. giscus adds its marker automatically when it creates a new thread. Do not reuse the Community welcome thread as a page comment thread. The widget creates no discussion during page load; a new page discussion may be created when a visitor submits their first comment or reaction after GitHub authorization.
+Each eligible page declares `meta[name="giscus:backlink"]` with its canonical trailing-slash URL. Research collections, guide pages, and Community use strict `pathname` mapping, so query strings do not create separate discussions or backlinks. The five currently approved experiment articles retain their seeded discussion threads through strict `number` mapping to Discussions #2–#6 while their canonical URLs move under `/research/`. New approved article pages without a seeded discussion use strict `pathname` mapping. Keep canonical URLs stable. With strict matching enabled, giscus hashes the page's mapped search term and finds that SHA-1 in the discussion body. Do not reuse the Community welcome thread as a page comment thread. The widget creates no discussion during page load; a new page discussion may be created when a visitor submits their first comment or reaction after GitHub authorization.
 
 ### Seeded approved-article discussions
 
 | Article route | GitHub Discussion |
 | --- | --- |
-| `/live/experiments/blank-workspace-javascript-construction/` | [#2](https://github.com/LarityLabs/whatslari-site/discussions/2) |
-| `/live/experiments/go-planner-research-to-construction/` | [#3](https://github.com/LarityLabs/whatslari-site/discussions/3) |
-| `/live/experiments/stateful-relational-induction/` | [#4](https://github.com/LarityLabs/whatslari-site/discussions/4) |
-| `/live/experiments/five-bounded-coding-lanes/` | [#5](https://github.com/LarityLabs/whatslari-site/discussions/5) |
-| `/live/experiments/recap-bounded-language-and-composition/` | [#6](https://github.com/LarityLabs/whatslari-site/discussions/6) |
-| `/live/experiments/learning-state-verification-and-rollback/` | [#7](https://github.com/LarityLabs/whatslari-site/discussions/7) |
+| `/research/experiments/blank-workspace-javascript-construction/` | [#2](https://github.com/LarityLabs/whatslari-site/discussions/2) |
+| `/research/experiments/go-planner-research-to-construction/` | [#3](https://github.com/LarityLabs/whatslari-site/discussions/3) |
+| `/research/experiments/stateful-relational-induction/` | [#4](https://github.com/LarityLabs/whatslari-site/discussions/4) |
+| `/research/experiments/five-bounded-coding-lanes/` | [#5](https://github.com/LarityLabs/whatslari-site/discussions/5) |
+| `/research/experiments/recap-bounded-language-and-composition/` | [#6](https://github.com/LarityLabs/whatslari-site/discussions/6) |
+| Historical held route `/live/experiments/learning-state-verification-and-rollback/` | [#7](https://github.com/LarityLabs/whatslari-site/discussions/7); legacy route redirects to the Research experiment collection |
 
-Each seed is in `Announcements`, links to its approved public article, and includes a SHA-1 marker for the canonical pathname required by strict matching. The discussion content retains the article's scoped result and limits and invites methods-focused replies. No held research was included.
+Discussions #2–#6 are in `Announcements`, link to their approved public articles, and are selected by number so existing threads survive the URL migration. Their discussion content retains each article's scoped result and limits and invites methods-focused replies. Discussion #7 belongs to a held record; that record remains excluded from the public snapshot and has no public detail page.
 
 The site requests discussion metadata and displays comment/reaction counts only after giscus sends metadata for a matching existing thread. No fallback or initial state invents counts. A load error shows a GitHub Discussions link. Reading is embedded; replying and reacting require GitHub authorization as prompted by GitHub.
 

@@ -34,7 +34,7 @@ Current approval state is a schema-3 projection of `private-review/decision-even
 
 Focused publication-lineage checks run with `npm run research:test-lineage`; they use disposable copies under the operating-system temporary directory. They do not reauthorize production records or export a snapshot.
 
-The scan and paper generator do not certify claims or approve publication. A report update does not automatically place any record in the public snapshot. Static Lari Live activity is derived from the same approved experiment and milestone records used for article pages; there is no live runtime connection.
+The scan and paper generator do not certify claims or approve publication. A report update does not automatically place any record in the public snapshot. The Research observatory and its activity feed are derived from approved experiment and milestone records; the site build exposes only the reviewed public snapshot and has no private runtime connection. Newly approved records appear after the authorized export and site build.
 
 ## Schema and revisions
 
