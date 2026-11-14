@@ -232,7 +232,7 @@ if (activity) {
   };
   const renderActivity = (snapshot, animateIds = new Set()) => {
     const items = [
-      ...snapshot.experiments.map(row => ({ ...row, activityKind: 'Research record published', activityHref: `/live/experiments/${encodeURIComponent(row.id)}/` })),
+      ...snapshot.experiments.map(row => ({ ...row, activityKind: 'Research record published', activityHref: `/research/experiments/${encodeURIComponent(row.id)}/` })),
     ].sort((a,b) => String(b.publishedAt || '').localeCompare(String(a.publishedAt || '')) || String(b.measuredAt || '').localeCompare(String(a.measuredAt || ''))).slice(0, 12);
     records = items;
     const fragment = document.createDocumentFragment();
@@ -284,7 +284,7 @@ if (activity) {
       currentSnapshotId = manifest.snapshotId;
       currentDigest = manifest.contentDigest;
       renderActivity(nextSnapshot, newIds);
-      activity.closest('[data-live-observatory]')?.dispatchEvent(new CustomEvent('live-snapshot-updated', { detail: nextSnapshot }));
+      activity.closest('[data-research-observatory]')?.dispatchEvent(new CustomEvent('research-snapshot-updated', { detail: nextSnapshot }));
       if (activityState) activityState.textContent = `Updated from approved snapshot ${manifest.snapshotId}. Published ${manifest.publishedAt ? new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' }).format(new Date(manifest.publishedAt)) : 'at an unknown time'} UTC.`;
     } catch (error) {
       if (activityState) activityState.textContent = `Showing the last built approved snapshot; update check unavailable (${error.message}).`;

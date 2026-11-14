@@ -114,7 +114,7 @@ assert.match(ocean, /uLight,reduced\.matches\?\.55:\.58/, 'reduced-motion CRT re
 assert.match(ocean, /webglcontextlost/, 'the renderer can fall back if its WebGL context is lost');
 assert.match(ocean, /if \(disposed\) return/);
 assert.match(ocean, /window\.removeEventListener\('pagehide', cleanup\)/);
-assert.match(liveController, /mountBinaryOcean\(\{canvas, fallbackCanvas, state, motionButton\}\)/, 'Lari Live keeps using the renderer defaults');
+assert.match(liveController, /mountBinaryOcean\(\{canvas, fallbackCanvas, state, motionButton\}\)/, 'Research keeps using the existing renderer defaults');
 assert.doesNotMatch(controller, /enterPrompt|machine\.enter\(\)/, 'the controller does not rely on an Enter prompt');
 assert.match(controller, /physicalPower\.disabled = state !== CRT_STATES\.OFF/);
 assert.match(controller, /stickyPower\.addEventListener\('click', onPhysicalPower\)/);

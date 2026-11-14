@@ -8,15 +8,15 @@ const dist = path.join(root, 'dist');
 const snapshot = JSON.parse(await fs.readFile(path.join(root, 'data/approved/snapshot.json'), 'utf8'));
 const htmlFiles = await fs.readdir(dist, { recursive: true });
 const pages = htmlFiles.filter(file => String(file).endsWith(path.join('index.html')));
-const staticRouteCount = 14;
-const fixedLegacyRedirectCount = 3;
-const experimentRouteCopies = 2; // canonical detail page plus legacy redirect
+const staticRouteCount = 13;
+const fixedLegacyRedirectCount = 8;
+const experimentRouteCopies = 3; // canonical detail page plus two legacy redirects
 assert.equal(pages.length, staticRouteCount + fixedLegacyRedirectCount + snapshot.experiments.length * experimentRouteCopies, 'canonical routes, approved experiment articles, and legacy redirects are prerendered');
 assert.ok(htmlFiles.includes('google4aaa287e48ffc299.html'), 'Google site verification file is included in the generated site');
 assert.equal(await fs.readFile(path.join(dist, 'google4aaa287e48ffc299.html'), 'utf8'), 'google-site-verification: google4aaa287e48ffc299.html');
-assert.ok(pages.includes(path.join('live','experiments','index.html')));
-assert.ok(pages.includes(path.join('live','capabilities','index.html')));
-assert.ok(pages.includes(path.join('live','timeline','index.html')));
+assert.ok(pages.includes(path.join('research','experiments','index.html')));
+assert.ok(pages.includes(path.join('research','capabilities','index.html')));
+assert.ok(pages.includes(path.join('research','timeline','index.html')));
 assert.ok(pages.includes(path.join('how-it-works', 'index.html')));
 assert.ok(pages.includes(path.join('community', 'request-experiment', 'index.html')));
 assert.ok(pages.includes(path.join('contact', 'index.html')));
@@ -118,37 +118,60 @@ assert.match(contact, /"email":"gorygrey@whatslari\.com"/);
 assert.match(contact, /"telephone":"\+1-814-315-2009"/);
 assert.match(about, /href="mailto:gorygrey@whatslari\.com"/);
 assert.match(about, /href="tel:\+18143152009"/);
-const livePage = await fs.readFile(path.join(dist,'live/index.html'),'utf8');
-assert.match(livePage,/Lari Live/);
-assert.match(livePage,/aria-label="Approved public research counts"/);
-assert.match(livePage,/live\/experiments\//);
-assert.match(livePage,/data-giscus-section/);
-assert.match(livePage,/data-giscus-config/);
-assert.match(livePage,/data-giscus-metadata/);
-assert.match(livePage,/data-live-activity/);
-assert.match(livePage,/assets\/live-observatory\.css/,'Lari Live loads its dedicated branded layout');
-assert.match(livePage,/assets\/live-observatory\.js/,'Lari Live loads its interactive visualization and recap');
-assert.match(livePage,/assets\/live-observatory\.js\?v=[a-f0-9]{12}/,'Lari Live invalidates cached controller modules when its code changes');
-assert.match(livePage,/data-observatory-canvas/,'the live page includes a GPU-enhanced surface');
-assert.match(livePage,/data-observatory-fallback/,'the live page includes a canvas fallback for browsers without WebGL2');
-assert.match(livePage,/data-ocean-zoom-in/,'the ocean has accessible zoom controls');
-assert.match(livePage,/id="observatory-title">Ocean of Intelligence</,'the binary ocean uses the requested concise title');
-assert.match(livePage,/aria-label="Interactive three-dimensional ocean/,'the canvas keeps its interaction guidance accessible');
-assert.doesNotMatch(livePage,/The ocean is drawn in your browser from moving 0s and 1s/,'the hero omits the unwanted visualization disclaimer');
-assert.match(livePage,/data-network-node=/,'approved experiment records are selectable network anchors');
-assert.match(livePage,/Private M0–M5 roadmap stages and progress are not exposed here/,'unapproved private roadmap details remain withheld');
-assert.match(livePage,new RegExp(`data-stat-value>${String(snapshot.experiments.length).padStart(2,'0')}<\\/span><small>Experiments`));
-assert.match(livePage,new RegExp(`data-stat-value>${String(snapshot.milestones.length).padStart(2,'0')}<\\/span><small>Milestones`));
-assert.match(livePage,new RegExp(`data-stat-value>${String(snapshot.metrics.length).padStart(2,'0')}<\\/span><small>Metrics`));
-assert.match(livePage,/aria-roledescription="carousel" aria-label="Approved research records"/,'approved research cards expose carousel semantics');
-assert.match(livePage,/class="observatory-pagination" role="group" aria-label="Choose a research card"/,'mobile carousel pagination is available to the controller');
-assert.doesNotMatch(livePage,/14 Approved Events|38%|E-014|R-009|Development Activity \(7d\)/,'mockup-only activity, labels, and percentages are not copied');
-assert.match(livePage,/data-activity-refresh/);
-assert.match(livePage,/data-areas="[^"]*"/);
-assert.match(livePage,/Research measurement time and public publication time are listed separately/);
-assert.match(livePage,/No private runtime connection/);
-assert.equal((livePage.match(/data-activity-card/g)||[]).length,snapshot.experiments.length,'activity feed reuses approved research records without duplicating milestone claims');
-const activityIds = [...livePage.matchAll(/data-source-id="([a-z0-9-]+)"/g)].map(match => match[1]);
+const researchPage = await fs.readFile(path.join(dist,'research/index.html'),'utf8');
+const migratedRedirects = [
+  ['live/index.html','/research/'],
+  ['live/experiments/index.html','/research/experiments/'],
+  ['live/capabilities/index.html','/research/capabilities/'],
+  ['live/timeline/index.html','/research/timeline/'],
+  ['experiments/index.html','/research/experiments/'],
+  ['capabilities/index.html','/research/capabilities/'],
+  ['development/index.html','/research/timeline/'],
+  ['live/experiments/learning-state-verification-and-rollback/index.html','/research/experiments/'],
+  ...snapshot.experiments.flatMap(row => [
+    [`live/experiments/${row.id}/index.html`,`/research/experiments/${row.id}/`],
+    [`experiments/${row.id}/index.html`,`/research/experiments/${row.id}/`]
+  ])
+];
+for (const [file, destination] of migratedRedirects) {
+  const html = await fs.readFile(path.join(dist,file),'utf8');
+  assert.match(html,/name="robots" content="noindex,follow"/);
+  assert.ok(html.includes('href="https://whatslari.com' + destination + '"'),file + ' preserves its Research destination');
+  assert.ok(html.includes('location.replace(' + JSON.stringify(destination) + ')'),file + ' redirects automatically');
+  assert.doesNotMatch(html,/data-giscus-section/,'legacy redirects do not create duplicate discussions');
+}
+assert.match(researchPage,/data-research-observatory/);
+assert.doesNotMatch(researchPage,/href="\/live\//,'the Research section no longer links to the old section');
+assert.match(researchPage,/Research into a developing architecture/);
+assert.match(researchPage,/aria-label="Approved public research counts"/);
+assert.match(researchPage,/research\/experiments\//);
+assert.match(researchPage,/data-giscus-section/);
+assert.match(researchPage,/data-giscus-config/);
+assert.match(researchPage,/data-giscus-metadata/);
+assert.match(researchPage,/data-live-activity/);
+assert.match(researchPage,/assets\/live-observatory\.css/,'Research reuses the existing observatory layout');
+assert.match(researchPage,/assets\/live-observatory\.js/,'Research loads the existing interactive visualization and recap');
+assert.match(researchPage,/assets\/live-observatory\.js\?v=[a-f0-9]{12}/,'Research invalidates the existing controller when its code changes');
+assert.match(researchPage,/data-observatory-canvas/,'Research includes the existing GPU-enhanced ocean surface');
+assert.match(researchPage,/data-observatory-fallback/,'Research includes the existing canvas fallback for browsers without WebGL2');
+assert.match(researchPage,/data-ocean-zoom-in/,'the ocean has accessible zoom controls');
+assert.match(researchPage,/id="observatory-title">Ocean of Intelligence</,'the binary ocean uses the requested concise title');
+assert.match(researchPage,/aria-label="Interactive three-dimensional ocean/,'the canvas keeps its interaction guidance accessible');
+assert.doesNotMatch(researchPage,/The ocean is drawn in your browser from moving 0s and 1s/,'the hero omits the unwanted visualization disclaimer');
+assert.match(researchPage,/data-network-node=/,'approved experiment records are selectable network anchors');
+assert.match(researchPage,/Private M0–M5 roadmap stages and progress are not exposed here/,'unapproved private roadmap details remain withheld');
+assert.match(researchPage,new RegExp(`data-stat-value>${String(snapshot.experiments.length).padStart(2,'0')}<\\/span><small>Experiments`));
+assert.match(researchPage,new RegExp(`data-stat-value>${String(snapshot.milestones.length).padStart(2,'0')}<\\/span><small>Milestones`));
+assert.match(researchPage,new RegExp(`data-stat-value>${String(snapshot.metrics.length).padStart(2,'0')}<\\/span><small>Metrics`));
+assert.match(researchPage,/aria-roledescription="carousel" aria-label="Approved research records"/,'approved research cards expose carousel semantics');
+assert.match(researchPage,/class="observatory-pagination" role="group" aria-label="Choose a research card"/,'mobile carousel pagination is available to the controller');
+assert.doesNotMatch(researchPage,/14 Approved Events|38%|E-014|R-009|Development Activity \(7d\)/,'mockup-only activity, labels, and percentages are not copied');
+assert.match(researchPage,/data-activity-refresh/);
+assert.match(researchPage,/data-areas="[^"]*"/);
+assert.match(researchPage,/Research measurement time and public publication time are listed separately/);
+assert.match(researchPage,/No private runtime connection/);
+assert.equal((researchPage.match(/data-activity-card/g)||[]).length,snapshot.experiments.length,'activity feed reuses approved research records without duplicating milestone claims');
+const activityIds = [...researchPage.matchAll(/data-source-id="([a-z0-9-]+)"/g)].map(match => match[1]);
 assert.equal(new Set(activityIds).size,activityIds.length,'the activity feed has no duplicate event identities');
 const liveManifest = JSON.parse(await fs.readFile(path.join(root,'dist/data/manifest.json'),'utf8'));
 assert.equal(liveManifest.snapshotId,snapshot.snapshotId);
@@ -163,16 +186,18 @@ const binaryOcean = await fs.readFile(path.join(root,'dist/assets/binary-ocean.j
 const builtObservatory = await fs.readFile(path.join(root,'dist/assets/live-observatory.js'),'utf8');
 const builtSite = await fs.readFile(path.join(root,'dist/assets/site.js'),'utf8');
 const builtCrtController = await fs.readFile(path.join(root,'dist/assets/crt-entrance.js'),'utf8');
-assert.match(builtObservatory,/from '\.\/binary-ocean\.js\?v=[a-f0-9]{12}'/,'Lari Live imports the content-versioned ocean renderer');
+assert.match(builtObservatory,/from '\.\/binary-ocean\.js\?v=[a-f0-9]{12}'/,'Research imports the content-versioned existing ocean renderer');
 assert.match(builtObservatory,/Show research card/,'mobile carousel pagination has accessible labels');
-assert.match(builtObservatory,/event\.key==='ArrowRight'/,'mobile carousel supports keyboard navigation');
+assert.match(builtObservatory,/event\.key === 'ArrowRight'/,'mobile carousel supports keyboard navigation');
+assert.match(builtObservatory,/research-snapshot-updated/,'approved snapshot updates refresh the existing Research carousel');
+assert.match(builtObservatory,/const renderCarousel/,'the existing carousel can render newly approved records');
 const observatoryCss = await fs.readFile(path.join(root,'dist/assets/live-observatory.css'),'utf8');
 assert.match(observatoryCss,/scroll-snap-type:x mandatory/,'mobile research cards use scroll snapping');
 assert.match(observatoryCss,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/,'mobile public stats use a compact three-column row');
 assert.match(observatoryCss,/grid-template-areas:"title" "ocean" "controls" "data" "records" "pagination"/,'mobile hero uses only defined grid areas');
 assert.match(home,/src="\/assets\/site\.js\?v=[a-f0-9]{12}"/,'the site entry point uses a content version');
 assert.match(builtSite,/from '\.\/crt-entrance\.js\?v=[a-f0-9]{12}'/,'the CRT controller import uses a content version');
-assert.match(builtCrtController,/from '\.\/binary-ocean\.js\?v=[a-f0-9]{12}'/,'the CRT and Lari Live point to the same versioned renderer');
+assert.match(builtCrtController,/from '\.\/binary-ocean\.js\?v=[a-f0-9]{12}'/,'the CRT and Research point to the same versioned renderer');
 assert.match(builtCrtController,/from '\.\/crt-state-machine\.js\?v=[a-f0-9]{12}'/,'the CRT state machine import uses a content version');
 assert.match(binaryOcean,/mountBinaryOcean/);
 assert.match(binaryOcean,/const glyphs='01'/,'the Canvas fallback uses only binary glyphs');
@@ -185,10 +210,10 @@ assert.match(binaryOcean,/Gentle binary ocean motion · reduced-motion preferenc
 assert.match(binaryOcean,/new MutationObserver\(\(\) => applyCurrentTheme\(\)\)/,'site theme changes are observed without restarting the simulation');
 assert.doesNotMatch(binaryOcean,/document\.body\.classList\.toggle\('light'/,'the ocean does not override the website theme');
 await fs.access(path.join(root,'dist/assets/activity.css'));
-const timelinePage = await fs.readFile(path.join(root,'dist/live/timeline/index.html'),'utf8');
+const timelinePage = await fs.readFile(path.join(root,'dist/research/timeline/index.html'),'utf8');
 assert.equal((timelinePage.match(/<details>/g)||[]).length,6,'approved timeline entries have expandable evidence details');
 assert.match(timelinePage,/Related research:/);
-const discussionRoutes = ['/live/','/live/experiments/','/live/capabilities/','/live/timeline/','/research/','/research/methods/','/research/verification-and-claim-scope/','/community/'];
+const discussionRoutes = ['/research/','/research/experiments/','/research/capabilities/','/research/timeline/','/research/methods/','/research/verification-and-claim-scope/','/community/'];
 for (const route of discussionRoutes) {
   const pagePath = path.join(route.replace(/^\//,'').replace(/\/$/,''),'index.html');
   const html = await fs.readFile(path.join(dist,pagePath),'utf8');
@@ -212,19 +237,23 @@ const css = await fs.readFile(path.join(dist, 'assets/site.css'), 'utf8');
 assert.match(css, /\[data-theme="dark"\]/);
 assert.match(css, /color-scheme:dark/);
 const mobileNav = home.match(/<nav id="mobile-nav"[^>]*>([\s\S]*?)<\/nav>/)?.[1] || '';
-assert.match(mobileNav, /\/live\/capabilities\//);
-assert.match(mobileNav, /\/live\/timeline\//);
+assert.match(mobileNav, /\/research\/capabilities\//);
+assert.doesNotMatch(mobileNav, /\/live\//);
+assert.match(mobileNav, /\/research\/timeline\//);
+const primaryNav = home.match(/<nav aria-label="Main navigation">([\s\S]*?)<\/nav>/)?.[1] || '';
+assert.match(primaryNav,/href="\/research\/"/,'Research is present in the primary navigation');
+assert.doesNotMatch(primaryNav,/Lari Live|href="\/live\//,'the redundant Live section is removed from primary navigation');
 
 const sitemap = await fs.readFile(path.join(dist, 'sitemap.xml'), 'utf8');
 assert.ok(sitemap.startsWith('<?xml version="1.0" encoding="UTF-8"?>'));
-const sitemapUrlCount = 14 + snapshot.experiments.length;
+const sitemapUrlCount = 13 + snapshot.experiments.length;
 assert.equal((sitemap.match(/<url>/g) || []).length, sitemapUrlCount, 'sitemap lists canonical routes and approved articles, excluding aliases');
 assert.equal((sitemap.match(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/g) || []).length, sitemapUrlCount);
 assert.doesNotMatch(sitemap.replace(/<\?xml[^>]+>/, ''), /\?|localhost|github\.io/i);
 const robots = await fs.readFile(path.join(dist, 'robots.txt'), 'utf8');
 assert.match(robots, /User-agent: \*\s+Allow: \/\s+Sitemap: https:\/\/whatslari\.com\/sitemap\.xml/);
 
-for (const row of snapshot.experiments) assert.ok(communityPage.includes(`/live/experiments/${row.id}/#discussion-title`), `community discussion discovery links to ${row.id}`);
+for (const row of snapshot.experiments) assert.ok(communityPage.includes(`/research/experiments/${row.id}/#discussion-title`), `community discussion discovery links to ${row.id}`);
 assert.equal(snapshot.status, 'approved');
 assert.equal(snapshot.experiments.length, 5, 'the authorized public snapshot contains five experiments');
 assert.equal(snapshot.capabilities.length, 3);
@@ -235,21 +264,31 @@ assert.deepEqual(new Set(snapshot.experiments.map(row => row.id)), new Set([
   'five-bounded-coding-lanes','recap-bounded-language-and-composition'
 ]));
 assert.ok(!snapshot.experiments.some(row => row.id === 'learning-state-verification-and-rollback'), 'the held lifecycle record is excluded from the public snapshot');
-assert.ok(!pages.includes(path.join('live','experiments','learning-state-verification-and-rollback','index.html')), 'the held lifecycle record has no generated public route');
+assert.ok(!pages.includes(path.join('research','experiments','learning-state-verification-and-rollback','index.html')), 'the held lifecycle record has no generated public article');
 assert.ok(!snapshot.experiments.some(row => /cumulative|persistence/i.test(row.id)), 'held composition and fixture-backed persistence studies are excluded');
 assert.equal(snapshot.sourceReport.sha256, undefined, 'private report hashes do not enter the public snapshot');
 assert.equal(snapshot.sourceReport.fingerprint, undefined, 'private fingerprints do not enter the public snapshot');
 for (const row of snapshot.experiments) {
-  const route = `live/experiments/${row.id}/index.html`;
+  const route = `research/experiments/${row.id}/index.html`;
   assert.ok(pages.includes(route.split('/').join(path.sep)), `${row.id} has a prerendered canonical article`);
   const article = await fs.readFile(path.join(dist, route), 'utf8');
-  assert.match(article, new RegExp(`<link rel="canonical" href="https://whatslari\\.com/live/experiments/${row.id}/">`));
+  assert.match(article, new RegExp(`<link rel="canonical" href="https://whatslari\\.com/research/experiments/${row.id}/">`));
   assert.match(article, new RegExp(`<meta property="og:image" content="https://whatslari\\.com/assets/social-cards/experiment-${row.id}\\.png">`));
   assert.match(article, /data-giscus-section/, `${row.id} has its own embedded discussion`);
+  const widget = JSON.parse(article.match(/<script type="application\/json" data-giscus-config>([\s\S]*?)<\/script>/)?.[1] || 'null');
+  const discussionNumbers = {
+    'blank-workspace-javascript-construction':2,
+    'go-planner-research-to-construction':3,
+    'stateful-relational-induction':4,
+    'five-bounded-coding-lanes':5,
+    'recap-bounded-language-and-composition':6
+  };
+  assert.equal(widget?.mapping,'number',`${row.id} keeps its existing discussion after the canonical route moves`);
+  assert.equal(widget?.term,discussionNumbers[row.id],`${row.id} remains linked to its seeded discussion`);
   assert.match(article, /<meta name="robots" content="index,follow"/);
 }
 assert.equal((researchHub.match(/class="research-story-links"/g) || []).length, 1, 'Research links to the approved article set');
-for (const row of snapshot.experiments) assert.ok(researchHub.includes(`/live/experiments/${row.id}/`), `${row.id} is linked from Research`);
+for (const row of snapshot.experiments) assert.ok(researchHub.includes(`/research/experiments/${row.id}/`), `${row.id} is linked from Research`);
 const allPublicText = await Promise.all(htmlFiles.filter(file => String(file).endsWith('.html')).map(file => fs.readFile(path.join(dist, file), 'utf8')));
 const corpus = allPublicText.join('\n');
 assert.doesNotMatch(corpus, /research framework: propose|A research loop,\s*not a promise|What if intelligence could learn/i, 'site positioning explains the AI architecture');

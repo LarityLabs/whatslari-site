@@ -12,18 +12,19 @@ if (config.brandName !== 'LARI' || config.brandExpansion !== 'Local Autonomous R
 const wrongExpansion = ['User-Owned', 'Learning Intelligence'].join(' ');
 const rightExpansion = 'Local Autonomous Recursive Intelligence';
 const files = await fs.readdir(path.join(root, 'dist'), { recursive: true });
-if (!files.includes('index.html') || !files.includes(path.join('live', 'index.html'))) problems.push('core static routes are missing');
+if (!files.includes('index.html') || !files.includes(path.join('research', 'index.html')) || !files.includes(path.join('live', 'index.html'))) problems.push('core Research routes or legacy redirects are missing');
 const htmlFiles = files.filter(file => String(file).endsWith(path.join('index.html')));
 const googleVerification = await fs.readFile(path.join(root, 'dist', 'google4aaa287e48ffc299.html'), 'utf8').catch(() => '');
 if (googleVerification !== 'google-site-verification: google4aaa287e48ffc299.html') problems.push('Google site verification file is missing or has unexpected content');
 const canonicalHtmlFiles = [];
 for (const file of htmlFiles) { const source = await fs.readFile(path.join(root, 'dist', file), 'utf8'); if (source.includes('name="robots" content="noindex,follow"')) { if (!source.includes('rel="canonical"') || !source.includes('location.replace(')) problems.push(`${file} legacy route is missing canonical redirect behavior`); } else canonicalHtmlFiles.push(file); }
 const expectedRoutes = [
-  'index.html', path.join('how-it-works', 'index.html'), path.join('live', 'index.html'),
-  path.join('live', 'experiments', 'index.html'), path.join('live', 'timeline', 'index.html'), path.join('research', 'index.html'),
+  'index.html', path.join('how-it-works', 'index.html'),
+  path.join('research', 'index.html'), path.join('research', 'experiments', 'index.html'),
+  path.join('research', 'timeline', 'index.html'), path.join('research', 'capabilities', 'index.html'),
   path.join('research', 'verification-and-claim-scope', 'index.html'), path.join('research', 'methods', 'index.html'),
-  path.join('live', 'capabilities', 'index.html'), path.join('community', 'index.html'),
-  path.join('community', 'request-experiment', 'index.html'), path.join('docs', 'index.html'), path.join('about', 'index.html'), path.join('contact', 'index.html')
+  path.join('community', 'index.html'), path.join('community', 'request-experiment', 'index.html'),
+  path.join('docs', 'index.html'), path.join('about', 'index.html'), path.join('contact', 'index.html')
 ];
 for (const route of expectedRoutes) if (!files.includes(route)) problems.push(`required public route is missing: ${route}`);
 let publicText = '';
@@ -83,7 +84,23 @@ if ([...sitemap.matchAll(/<url>/g)].length !== [...sitemap.matchAll(/<lastmod>\d
 const robots = await fs.readFile(path.join(root, 'dist/robots.txt'), 'utf8');
 if (!robots.includes('User-agent: *') || !robots.includes(`Sitemap: ${config.domain}/sitemap.xml`)) problems.push('robots.txt is missing public crawling or the production sitemap');
 for (const privateMarker of ['privateSourceRecordRef', 'activeModelSha256', 'proofArtifactSha256', 'candidate-records.json', 'private-review/']) if (publicText.includes(privateMarker)) problems.push(`generated site contains private review material: ${privateMarker}`);
-for (const route of ['experiments', 'capabilities', 'development']) { try { const html = await fs.readFile(path.join(root, 'dist', route, 'index.html'), 'utf8'); if (!html.includes('noindex,follow') || !html.includes('location.replace(')) problems.push(`legacy /${route}/ route is not a redirect`); } catch { problems.push(`legacy /${route}/ route is missing`); } }
+const requiredRedirects = [
+  ['live','/research/'], ['live/experiments','/research/experiments/'],
+  ['live/capabilities','/research/capabilities/'], ['live/timeline','/research/timeline/'],
+  ['experiments','/research/experiments/'], ['capabilities','/research/capabilities/'], ['development','/research/timeline/'],
+  ...snapshot.experiments.flatMap(row => [
+    ['live/experiments/' + row.id, '/research/experiments/' + row.id + '/'],
+    ['experiments/' + row.id, '/research/experiments/' + row.id + '/']
+  ]),
+  ['live/experiments/learning-state-verification-and-rollback','/research/experiments/']
+];
+for (const [route, target] of requiredRedirects) {
+  try {
+    const html = await fs.readFile(path.join(root, 'dist', route, 'index.html'), 'utf8');
+    const correct = html.includes('name="robots" content="noindex,follow"') && html.includes('href="' + config.domain + target + '"') && html.includes('location.replace(' + JSON.stringify(target) + ')');
+    if (!correct) problems.push('legacy /' + route + '/ route does not redirect to ' + target);
+  } catch { problems.push('legacy /' + route + '/ route is missing'); }
+}
 if (problems.length) {
   process.stderr.write(`Site checks failed:\n- ${problems.join('\n- ')}\n`);
   process.exitCode = 1;

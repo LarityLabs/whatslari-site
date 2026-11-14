@@ -1,5 +1,5 @@
 import { mountBinaryOcean } from './binary-ocean.js';
-const root = document.querySelector('[data-live-observatory]');
+const root = document.querySelector('[data-research-observatory]');
 if (root) {
   let records = JSON.parse(root.dataset.records || '[]');
   let milestones = JSON.parse(root.dataset.milestones || '[]');
@@ -18,54 +18,94 @@ if (root) {
     root.querySelectorAll('[data-dot]').forEach(dot=>dot.classList.toggle('is-active',allowed.has(dot.dataset.dot)));
     root.querySelectorAll('.network-edges line').forEach(line=>line.classList.toggle('is-active',line.dataset.edge.split(' ').every(id=>allowed.has(id))));
     const title=detail.querySelector('h3'),eyebrow=detail.querySelector('.eyebrow'),copy=detail.querySelector('p:not(.eyebrow)'),link=detail.querySelector('a');
-    if(title)title.textContent=record.title;if(eyebrow)eyebrow.textContent=record.researchArea||'Approved research record';if(copy)copy.textContent=record.summary;if(link){link.href=`/live/experiments/${encodeURIComponent(record.id)}/`;link.textContent='Read the approved evidence →';}
+    if(title)title.textContent=record.title;if(eyebrow)eyebrow.textContent=record.researchArea||'Approved research record';if(copy)copy.textContent=record.summary;if(link){link.href=`/research/experiments/${encodeURIComponent(record.id)}/`;link.textContent='Read the approved evidence →';}
   };
   nodeButtons.forEach(button=>button.addEventListener('click',()=>selectNode(button)));
   if(nodeButtons[0])selectNode(nodeButtons[0]);
   root.querySelectorAll('[data-observatory-anchor]').forEach(button=>button.addEventListener('click',()=>{const target=root.querySelector(`[data-network-node="${CSS.escape(button.dataset.observatoryAnchor)}"]`);if(target){target.click();root.querySelector('#live-network')?.scrollIntoView({behavior:reduced.matches?'auto':'smooth',block:'start'});}}));
 
-  const carousel=root.querySelector('.observatory-record-anchors');
-  const carouselCards=carousel?[...carousel.querySelectorAll('[data-observatory-anchor]')]:[];
-  const pagination=root.querySelector('.observatory-pagination');
-  if(carousel&&pagination&&carouselCards.length){
-    let activeCard=0,scrollFrame=0;
-    const pageButtons=carouselCards.map((card,index)=>{
-      const dot=document.createElement('button');dot.type='button';dot.setAttribute('aria-label',`Show research card ${index+1} of ${carouselCards.length}`);
-      dot.addEventListener('click',()=>carousel.scrollTo({left:card.offsetLeft-carouselCards[0].offsetLeft,behavior:reduced.matches?'auto':'smooth'}));
-      pagination.append(dot);return dot;
+  const carousel = root.querySelector('.observatory-record-anchors');
+  const pagination = root.querySelector('.observatory-pagination');
+  let carouselCards = [], pageButtons = [], activeCard = 0, scrollFrame = 0;
+  const syncPagination = () => {
+    scrollFrame = 0;
+    if (!carouselCards.length) return;
+    const left = carousel.scrollLeft;
+    let closest = 0, nearest = Infinity;
+    carouselCards.forEach((card, index) => {
+      const distance = Math.abs(card.offsetLeft - carouselCards[0].offsetLeft - left);
+      if (distance < nearest) { nearest = distance; closest = index; }
     });
-    const syncPagination=()=>{
-      scrollFrame=0;
-      const left=carousel.scrollLeft;
-      let closest=0,nearest=Infinity;
-      carouselCards.forEach((card,index)=>{const distance=Math.abs(card.offsetLeft-carouselCards[0].offsetLeft-left);if(distance<nearest){nearest=distance;closest=index;}});
-      activeCard=closest;
-      pageButtons.forEach((dot,index)=>{if(index===activeCard)dot.setAttribute('aria-current','true');else dot.removeAttribute('aria-current');});
-    };
-    carousel.addEventListener('scroll',()=>{if(!scrollFrame)scrollFrame=requestAnimationFrame(syncPagination)},{passive:true});
-    carousel.addEventListener('keydown',event=>{
-      let next=activeCard;
-      if(event.key==='ArrowRight')next=Math.min(carouselCards.length-1,activeCard+1);
-      else if(event.key==='ArrowLeft')next=Math.max(0,activeCard-1);
-      else if(event.key==='Home')next=0;
-      else if(event.key==='End')next=carouselCards.length-1;
-      else return;
-      event.preventDefault();carouselCards[next].focus();carousel.scrollTo({left:carouselCards[next].offsetLeft-carouselCards[0].offsetLeft,behavior:reduced.matches?'auto':'smooth'});
+    activeCard = closest;
+    pageButtons.forEach((dot, index) => {
+      if (index === activeCard) dot.setAttribute('aria-current', 'true');
+      else dot.removeAttribute('aria-current');
     });
+  };
+  const scrollToCard = card => {
+    if (!carouselCards.length) return;
+    carousel.scrollTo({ left: card.offsetLeft - carouselCards[0].offsetLeft, behavior: reduced.matches ? 'auto' : 'smooth' });
+  };
+  const renderCarousel = () => {
+    if (!carousel || !pagination) return;
+    const visible = records.slice(0, 6);
+    carouselCards = visible.map((row, index) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.setAttribute('aria-roledescription', 'slide');
+      button.setAttribute('aria-label', (index + 1) + ' of ' + visible.length + ': ' + row.title);
+      button.dataset.observatoryAnchor = row.id;
+      button.style.setProperty('--anchor-index', String(index));
+      const number = document.createElement('span');
+      number.setAttribute('aria-hidden', 'true');
+      number.textContent = String(index + 1).padStart(2, '0');
+      const title = document.createElement('span');
+      title.textContent = row.title;
+      button.append(number, title);
+      button.addEventListener('click', () => {
+        const target = root.querySelector('[data-network-node="' + CSS.escape(row.id) + '"]');
+        if (target) { target.click(); root.querySelector('#live-network')?.scrollIntoView({ behavior: reduced.matches ? 'auto' : 'smooth', block: 'start' }); }
+      });
+      return button;
+    });
+    carousel.replaceChildren(...carouselCards);
+    activeCard = Math.min(activeCard, Math.max(0, carouselCards.length - 1));
+    pageButtons = carouselCards.map((card, index) => {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.setAttribute('aria-label', 'Show research card ' + (index + 1) + ' of ' + carouselCards.length);
+      dot.addEventListener('click', () => scrollToCard(card));
+      return dot;
+    });
+    pagination.replaceChildren(...pageButtons);
     syncPagination();
-  }
+  };
+  carousel?.addEventListener('scroll', () => { if (!scrollFrame) scrollFrame = requestAnimationFrame(syncPagination); }, { passive: true });
+  carousel?.addEventListener('keydown', event => {
+    let next = activeCard;
+    if (event.key === 'ArrowRight') next = Math.min(carouselCards.length - 1, activeCard + 1);
+    else if (event.key === 'ArrowLeft') next = Math.max(0, activeCard - 1);
+    else if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = carouselCards.length - 1;
+    else return;
+    if (!carouselCards.length) return;
+    event.preventDefault();
+    carouselCards[next].focus();
+    scrollToCard(carouselCards[next]);
+  });
+  renderCarousel();
 
   let recapIndex=0, recapTimer=0;
   const recapTitle=root.querySelector('[data-recap-title]'),recapLink=root.querySelector('[data-recap-link]'),recapSummary=root.querySelector('[data-recap-summary]'),recapLimits=root.querySelector('[data-recap-limits]'),recapCount=root.querySelector('[data-recap-count]'),recapUpdate=root.querySelector('[data-recap-update]');
   const visitKey='lari-live-last-seen-v1';
   let prior=0,hasNewSinceVisit=false;try{prior=Number(localStorage.getItem(visitKey)||0);localStorage.setItem(visitKey,String(Date.now()));}catch{}
-  const renderRecap=()=>{if(!records.length)return;const row=records[recapIndex%records.length];if(recapTitle)recapTitle.textContent=hasNewSinceVisit?'Since your last visit':'The story so far';if(recapLink){recapLink.href=`/live/experiments/${encodeURIComponent(row.id)}/`;recapLink.textContent=`${row.title} ↗`;}if(recapSummary)recapSummary.textContent=row.summary;if(recapLimits)recapLimits.textContent=row.limitations||'No additional limitation supplied.';if(recapCount)recapCount.textContent=`${String((recapIndex%records.length)+1).padStart(2,'0')} / ${String(records.length).padStart(2,'0')}`;};
+  const renderRecap=()=>{if(!records.length)return;const row=records[recapIndex%records.length];if(recapTitle)recapTitle.textContent=hasNewSinceVisit?'Since your last visit':'The story so far';if(recapLink){recapLink.href=`/research/experiments/${encodeURIComponent(row.id)}/`;recapLink.textContent=`${row.title} ↗`;}if(recapSummary)recapSummary.textContent=row.summary;if(recapLimits)recapLimits.textContent=row.limitations||'No additional limitation supplied.';if(recapCount)recapCount.textContent=`${String((recapIndex%records.length)+1).padStart(2,'0')} / ${String(records.length).padStart(2,'0')}`;};
   if(prior){const newer=records.filter(row=>Date.parse(row.publishedAt||'')>prior);if(newer.length){hasNewSinceVisit=true;recapIndex=records.indexOf(newer[0]);if(recapUpdate)recapUpdate.textContent=`${newer.length} approved record${newer.length===1?'':'s'} published since your previous visit, based on this browser’s saved timestamp.`;}else if(recapUpdate)recapUpdate.textContent='No approved records have been published since your previous visit. Showing the approved story so far.';}
   renderRecap();
   const shift=delta=>{if(!records.length)return;recapIndex=(recapIndex+delta+records.length)%records.length;renderRecap();};
   root.querySelector('[data-recap-prev]')?.addEventListener('click',()=>shift(-1));root.querySelector('[data-recap-next]')?.addEventListener('click',()=>shift(1));
   root.querySelector('[data-recap-replay]')?.addEventListener('click',()=>{clearInterval(recapTimer);recapIndex=0;renderRecap();if(!reduced.matches&&records.length>1)recapTimer=setInterval(()=>shift(1),4300);});
-  root.addEventListener('live-snapshot-updated',event=>{
+  root.addEventListener('research-snapshot-updated',event=>{
     const next=event.detail;if(!next)return;
     records=[...next.experiments].sort((a,b)=>String(b.publishedAt||'').localeCompare(String(a.publishedAt||'')));
     milestones=[...next.milestones].sort((a,b)=>String(b.measuredAt||'').localeCompare(String(a.measuredAt||'')));
@@ -77,8 +117,8 @@ if (root) {
     if(nodeList){nodeList.replaceChildren(...positions.map(({row},i)=>{const button=document.createElement('button');button.type='button';button.className='observatory-node';button.dataset.networkNode=row.id;button.dataset.links=related(row).join('|');button.setAttribute('aria-pressed',String(i===0));const index=document.createElement('span');index.className='observatory-node-mark';index.textContent=String(i+1).padStart(2,'0');const label=document.createElement('span'),strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=row.title;small.textContent=row.researchArea||'Unclassified';label.append(strong,small);button.append(index,label);button.addEventListener('click',()=>{nodeButtons.splice(0,nodeButtons.length,...root.querySelectorAll('[data-network-node]'));selectNode(button);});return button;}));}
     const edges=root.querySelector('.network-edges'),dots=root.querySelector('.network-dots');
     if(edges&&dots){edges.replaceChildren();dots.replaceChildren();for(const {row,x,y} of positions){const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');dot.dataset.dot=row.id;dot.setAttribute('cx',`${x}%`);dot.setAttribute('cy',`${y}%`);dot.setAttribute('r','6');dots.append(dot);for(const id of related(row)){if(row.id>=id)continue;const target=positions.find(item=>item.row.id===id);if(!target)continue;const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.dataset.edge=`${row.id} ${id}`;line.setAttribute('x1',`${x}%`);line.setAttribute('y1',`${y}%`);line.setAttribute('x2',`${target.x}%`);line.setAttribute('y2',`${target.y}%`);edges.append(line);}}}
-    const journey=root.querySelector('.journey-list');if(journey)journey.replaceChildren(...milestones.map((row,i)=>{const li=document.createElement('li');li.className='journey-item';const number=document.createElement('span');number.className='journey-index';number.textContent=String(i+1).padStart(2,'0');const content=document.createElement('div'),eyebrow=document.createElement('p'),heading=document.createElement('h3'),summary=document.createElement('p'),date=document.createElement('small');eyebrow.className='eyebrow';eyebrow.textContent=`Reviewed public milestone · ${row.verificationStatus||'status unavailable'}`;heading.textContent=row.title;summary.textContent=row.summary;date.textContent=`Measured ${row.measuredAt||'date unavailable'} · Published ${row.publishedAt||'date unavailable'}`;content.append(eyebrow,heading,summary,date);const links=(row.relatedExperimentIds||[]).map(id=>records.find(record=>record.id===id)).filter(Boolean);if(links.length){const p=document.createElement('p');p.textContent='Evidence: ';for(const record of links){const a=document.createElement('a');a.href=`/live/experiments/${encodeURIComponent(record.id)}/`;a.textContent=`${record.title} ↗`;p.append(a,document.createTextNode(' '));}content.append(p);}li.append(number,content);return li;}));
-    const count=root.querySelectorAll('[data-stat-value]');if(count.length===3){count[0].textContent=String(records.length).padStart(2,'0');count[1].textContent=String(milestones.length).padStart(2,'0');count[2].textContent=String(next.metrics?.length||0).padStart(2,'0');}
+    const journey=root.querySelector('.journey-list');if(journey)journey.replaceChildren(...milestones.map((row,i)=>{const li=document.createElement('li');li.className='journey-item';const number=document.createElement('span');number.className='journey-index';number.textContent=String(i+1).padStart(2,'0');const content=document.createElement('div'),eyebrow=document.createElement('p'),heading=document.createElement('h3'),summary=document.createElement('p'),date=document.createElement('small');eyebrow.className='eyebrow';eyebrow.textContent=`Reviewed public milestone · ${row.verificationStatus||'status unavailable'}`;heading.textContent=row.title;summary.textContent=row.summary;date.textContent=`Measured ${row.measuredAt||'date unavailable'} · Published ${row.publishedAt||'date unavailable'}`;content.append(eyebrow,heading,summary,date);const links=(row.relatedExperimentIds||[]).map(id=>records.find(record=>record.id===id)).filter(Boolean);if(links.length){const p=document.createElement('p');p.textContent='Evidence: ';for(const record of links){const a=document.createElement('a');a.href=`/research/experiments/${encodeURIComponent(record.id)}/`;a.textContent=`${record.title} ↗`;p.append(a,document.createTextNode(' '));}content.append(p);}li.append(number,content);return li;}));
+    const snapshotLabel=root.querySelector('[data-live-snapshot]');if(snapshotLabel)snapshotLabel.textContent=next.snapshotId||'snapshot unavailable';renderCarousel();const count=root.querySelectorAll('[data-stat-value]');if(count.length===3){count[0].textContent=String(records.length).padStart(2,'0');count[1].textContent=String(milestones.length).padStart(2,'0');count[2].textContent=String(next.metrics?.length||0).padStart(2,'0');}
     const first=root.querySelector('.network-node-list [data-network-node]');if(first)selectNode(first);
   });
 }
