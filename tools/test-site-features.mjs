@@ -8,7 +8,7 @@ const dist = path.join(root, 'dist');
 const snapshot = JSON.parse(await fs.readFile(path.join(root, 'data/approved/snapshot.json'), 'utf8'));
 const htmlFiles = await fs.readdir(dist, { recursive: true });
 const pages = htmlFiles.filter(file => String(file).endsWith(path.join('index.html')));
-const staticRouteCount = 13;
+const staticRouteCount = 15;
 const fixedLegacyRedirectCount = 8;
 const experimentRouteCopies = 3; // canonical detail page plus two legacy redirects
 assert.equal(pages.length, staticRouteCount + fixedLegacyRedirectCount + snapshot.experiments.length * experimentRouteCopies, 'canonical routes, approved experiment articles, and legacy redirects are prerendered');
@@ -22,6 +22,9 @@ assert.ok(pages.includes(path.join('community', 'request-experiment', 'index.htm
 assert.ok(pages.includes(path.join('contact', 'index.html')));
 assert.ok(pages.includes(path.join('research', 'verification-and-claim-scope', 'index.html')));
 assert.ok(pages.includes(path.join('research', 'methods', 'index.html')));
+assert.ok(pages.includes(path.join('privacy', 'index.html')));
+assert.ok(pages.includes(path.join('terms', 'index.html')));
+assert.deepEqual(await fs.readFile(path.join(dist, 'favicon.ico')), await fs.readFile(path.join(root, 'assets/favicon.ico')), 'the default /favicon.ico route contains the approved favicon');
 
 const titles = new Set();
 for (const file of pages) {
@@ -34,6 +37,9 @@ for (const file of pages) {
   assert.match(html, /<meta name="description" content="[^"]{50,}"/);
   assert.match(html, /<meta name="robots" content="index,follow"/);
   assert.match(html, /<link rel="canonical" href="https:\/\/whatslari\.com\/(?:[^"?]*)"/);
+  assert.match(html, /<link rel="icon" href="\/favicon\.ico" sizes="any"/);
+  assert.match(html, /href="\/privacy\/">Privacy<\/a>/);
+  assert.match(html, /href="\/terms\/">Terms<\/a>/);
   assert.doesNotMatch(html, /127\.0\.0\.1|localhost|file:\/\//i);
   assert.match(html, /property="og:image:width" content="1200"/);
   assert.match(html, /property="og:image:height" content="630"/);
@@ -260,9 +266,23 @@ const primaryNav = home.match(/<nav aria-label="Main navigation">([\s\S]*?)<\/na
 assert.match(primaryNav,/href="\/research\/"/,'Research is present in the primary navigation');
 assert.doesNotMatch(primaryNav,/Lari Live|href="\/live\//,'the redundant Live section is removed from primary navigation');
 
+const privacyPage = await fs.readFile(path.join(dist, 'privacy', 'index.html'), 'utf8');
+assert.match(privacyPage, /rel="canonical" href="https:\/\/whatslari\.com\/privacy\/"/);
+assert.match(privacyPage, /visitor IP addresses for security/);
+assert.match(privacyPage, /lari-theme/);
+assert.match(privacyPage, /lari-intro-complete/);
+assert.match(privacyPage, /not submitted by this website/);
+assert.match(privacyPage, /github\.com\/giscus\/giscus/);
+assert.doesNotMatch(privacyPage, /data-giscus-section/, 'policy pages do not load an embedded discussion');
+const termsPage = await fs.readFile(path.join(dist, 'terms', 'index.html'), 'utf8');
+assert.match(termsPage, /rel="canonical" href="https:\/\/whatslari\.com\/terms\/"/);
+assert.match(termsPage, /research record/);
+assert.match(termsPage, /github-terms-of-service/);
+assert.doesNotMatch(termsPage, /data-giscus-section/, 'policy pages do not load an embedded discussion');
+
 const sitemap = await fs.readFile(path.join(dist, 'sitemap.xml'), 'utf8');
 assert.ok(sitemap.startsWith('<?xml version="1.0" encoding="UTF-8"?>'));
-const sitemapUrlCount = 13 + snapshot.experiments.length;
+const sitemapUrlCount = staticRouteCount + snapshot.experiments.length;
 assert.equal((sitemap.match(/<url>/g) || []).length, sitemapUrlCount, 'sitemap lists canonical routes and approved articles, excluding aliases');
 assert.equal((sitemap.match(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/g) || []).length, sitemapUrlCount);
 assert.doesNotMatch(sitemap.replace(/<\?xml[^>]+>/, ''), /\?|localhost|github\.io/i);

@@ -24,9 +24,15 @@ const expectedRoutes = [
   path.join('research', 'timeline', 'index.html'), path.join('research', 'capabilities', 'index.html'),
   path.join('research', 'verification-and-claim-scope', 'index.html'), path.join('research', 'methods', 'index.html'),
   path.join('community', 'index.html'), path.join('community', 'request-experiment', 'index.html'),
-  path.join('docs', 'index.html'), path.join('about', 'index.html'), path.join('contact', 'index.html')
+  path.join('docs', 'index.html'), path.join('about', 'index.html'), path.join('contact', 'index.html'),
+  path.join('privacy', 'index.html'), path.join('terms', 'index.html')
 ];
 for (const route of expectedRoutes) if (!files.includes(route)) problems.push(`required public route is missing: ${route}`);
+try {
+  const rootFavicon = await fs.readFile(path.join(root, 'dist/favicon.ico'));
+  const sourceFavicon = await fs.readFile(path.join(root, 'assets/favicon.ico'));
+  if (!rootFavicon.equals(sourceFavicon)) problems.push('root /favicon.ico does not match the approved favicon asset');
+} catch { problems.push('default /favicon.ico is missing from the generated root'); }
 let publicText = '';
 for (const file of files.filter(file => /\.(?:html|js|css|json|svg|xml|txt)$/.test(String(file)))) publicText += await fs.readFile(path.join(root, 'dist', file), 'utf8');
 if (publicText.includes(wrongExpansion)) problems.push('generated output contains outdated LARI expansion');
@@ -56,7 +62,7 @@ for (const file of canonicalHtmlFiles) {
   if (!html.includes('<main id="main"') || !html.includes('aria-label="Main navigation"')) problems.push(`${file} is missing semantic landmarks`);
   if (!/<h1\b/.test(html) || !/<title>[^<]+<\/title>/.test(html)) problems.push(`${file} is missing a page heading or title`);
   if (!html.includes('/assets/lari-primary-light.svg') || !html.includes('/assets/lari-primary-dark.svg')) problems.push(`${file} is missing the correct header/footer lockups`);
-  if (!html.includes('/assets/favicon.ico') || !html.includes('/assets/site.webmanifest')) problems.push(`${file} is missing the v4 favicon or manifest`);
+  if (!html.includes('href="/favicon.ico"') || !html.includes('/assets/site.webmanifest')) problems.push(`${file} is missing the root favicon or manifest`);
   if (!html.includes('id="theme-choice"') || !html.includes('data-theme="light"')) problems.push(`${file} is missing the accessible theme preference or early theme bootstrap`);
   if (!/<meta name="description" content="[^"]{50,}"/.test(html) || !/<meta name="robots" content="index,follow"/.test(html)) problems.push(`${file} is missing a useful description or index directive`);
   if (!/<meta property="og:image" content="https:\/\/whatslari\.com\/assets\/social-cards\/[^"]+\.png"/.test(html)) problems.push(`${file} is missing its production PNG social card`);
@@ -64,7 +70,7 @@ for (const file of canonicalHtmlFiles) {
   if (!html.includes('type="application/ld+json"')) problems.push(`${file} is missing JSON-LD structured data`);
   for (const match of html.matchAll(/href="(\/[^"]+)"/g)) {
     const target = match[1].split('#')[0].split('?')[0];
-    if (target.startsWith('/assets/') || target.startsWith('/data/')) continue;
+    if (target === '/favicon.ico' || target.startsWith('/assets/') || target.startsWith('/data/')) continue;
     const routePath = target === '/' ? 'index.html' : `${target.replace(/^\//, '').replace(/\/$/, '')}/index.html`;
     try { await fs.access(path.join(root, 'dist', routePath)); } catch { problems.push(`${file} links to missing route ${target}`); }
   }
